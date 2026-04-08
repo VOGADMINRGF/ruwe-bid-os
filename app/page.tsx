@@ -1,65 +1,130 @@
-import Image from "next/image";
+import { agents, tenders, zones } from "@/data/seed";
+import { goQuote, weightedPipeline, dashboardKPIs, overallAssessment } from "@/lib/score";
 
-export default function Home() {
+export default function Page() {
+  const weighted = weightedPipeline(tenders);
+  const quote = goQuote(tenders);
+  const kpis = dashboardKPIs(tenders);
+  const assessment = overallAssessment(tenders);
+
+  const assessmentColor =
+    assessment === "gut" ? "#16a34a" : assessment === "kritisch" ? "#dc2626" : "#f59e0b";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="grid" style={{ gap: 24 }}>
+      <section>
+        <h1 style={{ fontSize: 42, margin: 0 }}>Vertriebssteuerung neu denken.</h1>
+        <p style={{ maxWidth: 820, fontSize: 18 }}>
+          Zonen-, radius- und gewerkebasiertes Bid Operating System für Pipeline, Agenten,
+          Ausschreibungen, Forecast und Automatisierung.
+        </p>
+      </section>
+
+      {/* KPI CARDS */}
+      <section className="grid grid-4">
+        <div className="card"><div className="label">Neu eingegangen</div><div className="kpi">{kpis.neu}</div></div>
+        <div className="card"><div className="label">Manuell prüfen</div><div className="kpi">{kpis.manual}</div></div>
+        <div className="card"><div className="label">Go-Kandidaten</div><div className="kpi">{kpis.goCandidates}</div></div>
+        <div className="card"><div className="label">Offene Entscheidungen</div><div className="kpi">{kpis.offene}</div></div>
+        <div className="card"><div className="label">Überfällig</div><div className="kpi">{kpis.ueberfaellig}</div></div>
+        <div className="card">
+          <div className="label">Gesamtlage</div>
+          <div className="kpi" style={{ color: assessmentColor, textTransform: "uppercase" }}>
+            {assessment}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* MANAGEMENT QUEUE */}
+      <section className="card">
+        <h2 style={{ marginTop: 0 }}>Management-Warteschlange</h2>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Region</th>
+              <th>Priorität</th>
+              <th>Manuelle Prüfung</th>
+              <th>Verantwortlich</th>
+              <th>Frist</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tenders
+              .filter((t) => t.manualReview !== "nein" || t.decision === "Prüfen")
+              .map((t) => (
+                <tr key={t.id}>
+                  <td>{t.title}</td>
+                  <td>{t.region}</td>
+                  <td>{t.priority}</td>
+                  <td>{t.manualReview}</td>
+                  <td>{t.owner || "-"}</td>
+                  <td>{t.dueDate || "-"}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </section>
+
+      {/* EXISTING TABLES */}
+      <section className="grid grid-2">
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Tender Übersicht</h2>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Region</th>
+                <th>Gewerk</th>
+                <th>Priorität</th>
+                <th>Entscheidung</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tenders.map((t) => (
+                <tr key={t.id}>
+                  <td>{t.title}</td>
+                  <td>{t.region}</td>
+                  <td>{t.trade}</td>
+                  <td>{t.priority}</td>
+                  <td>{t.decision}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
+
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Agenten & Steuerung</h2>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Fokus</th>
+                <th>Level</th>
+                <th>Win-Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((a) => (
+                <tr key={a.id}>
+                  <td>{a.name}</td>
+                  <td>{a.focus}</td>
+                  <td>{a.level}</td>
+                  <td>{Math.round(a.winRate * 100)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 16 }}>
+            <div className="label">Weighted Pipeline</div>
+            <div className="kpi">{Math.round(weighted / 1000)}k €</div>
+            <div className="label" style={{ marginTop: 8 }}>Go-Quote</div>
+            <div className="kpi">{Math.round(quote * 100)}%</div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
