@@ -6,48 +6,35 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id    String @id @default(uuid())
+  name  String
+  role  String
+}
+
 model Tender {
-  id        String  @id @default(uuid())
-  title     String
-  region    String
-  trade     String
-  priority  String
-  createdAt DateTime @default(now())
-}
-
-model Zone {
-  id        String  @id @default(uuid())
-  name      String
-  radiusKm  Int
-  trades    String
-}
-
-model Agent {
-  id        String  @id @default(uuid())
-  name      String
-  focus     String
-  level     String
-  winRate   Float
-}
-
-model Buyer {
-  id        String  @id @default(uuid())
-  name      String
-  type      String
-  strategic Boolean @default(false)
-}
-
-model Reference {
-  id          String  @id @default(uuid())
-  title       String
-  description String
-  trade       String
-  region      String
+  id           String   @id @default(uuid())
+  title        String
+  region       String
+  trade        String
+  priority     String
+  status       String
+  manualReview Boolean  @default(false)
+  dueDate      DateTime?
+  value        Float    @default(0)
+  createdAt    DateTime @default(now())
 }
 
 model PipelineEntry {
-  id        String  @id @default(uuid())
-  title     String
-  stage     String
-  value     Float
+  id    String @id @default(uuid())
+  title String
+  stage String
+  value Float
+}
+
+model MonitoringSource {
+  id   String @id @default(uuid())
+  name String
+  url  String
+  type String
 }

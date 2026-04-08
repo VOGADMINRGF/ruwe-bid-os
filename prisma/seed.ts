@@ -2,42 +2,22 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.zone.create({
-    data: { name: "Leipzig/Halle", radiusKm: 55, trades: "Facility,Sicherheit" },
+  await prisma.tender.createMany({
+    data: [
+      { title: "Sicherheitsdienst", region: "Magdeburg", trade: "Sicherheit", priority: "A", status: "neu", manualReview: true, value: 300000 },
+      { title: "Reinigung Berlin", region: "Berlin", trade: "Reinigung", priority: "B", status: "go", manualReview: false, value: 500000 },
+    ],
   });
 
-  await prisma.agent.create({
-    data: { name: "Agent 1", focus: "Facility Ost", level: "Koordinator", winRate: 0.41 },
+  await prisma.pipelineEntry.createMany({
+    data: [
+      { title: "Projekt A", stage: "Angebot", value: 200000 },
+      { title: "Projekt B", stage: "Verhandlung", value: 400000 },
+    ],
   });
 
-  await prisma.buyer.create({
-    data: { name: "Stadt Leipzig", type: "Öffentlich", strategic: true },
-  });
-
-  await prisma.tender.create({
-    data: {
-      title: "Verwaltungsreinigung Leipzig",
-      region: "Leipzig/Halle",
-      trade: "Facility",
-      priority: "A",
-    },
-  });
-
-  await prisma.reference.create({
-    data: {
-      title: "Referenz Berlin",
-      description: "Großprojekt Reinigung",
-      trade: "Reinigung",
-      region: "Berlin",
-    },
-  });
-
-  await prisma.pipelineEntry.create({
-    data: {
-      title: "Pipeline Projekt 1",
-      stage: "Angebot",
-      value: 250000,
-    },
+  await prisma.monitoringSource.create({
+    data: { name: "TED Europa", url: "https://ted.europa.eu", type: "rss" },
   });
 }
 
