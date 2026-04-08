@@ -6,35 +6,22 @@ datasource db {
   provider = "sqlite"
 }
 
-model User {
-  id    String @id @default(uuid())
-  name  String
-  role  String
-}
-
 model Tender {
-  id           String   @id @default(uuid())
+  id           Int     @id @default(autoincrement())
   title        String
   region       String
   trade        String
   priority     String
   status       String
-  manualReview Boolean  @default(false)
-  dueDate      DateTime?
-  value        Float    @default(0)
+  manualReview Boolean
+  value        Int
   createdAt    DateTime @default(now())
 }
 
 model PipelineEntry {
-  id    String @id @default(uuid())
-  title String
-  stage String
-  value Float
-}
-
-model MonitoringSource {
-  id   String @id @default(uuid())
-  name String
-  url  String
-  type String
+  id        Int     @id @default(autoincrement())
+  title     String
+  stage     String
+  value     Int
+  createdAt DateTime @default(now())
 }

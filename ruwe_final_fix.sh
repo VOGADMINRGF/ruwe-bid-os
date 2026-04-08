@@ -1,19 +1,13 @@
 #!/bin/bash
 set -e
 
-echo "🚀 RUWE Bid OS – Master Setup startet..."
+echo "🚀 RUWE Bid OS – Final Fix startet..."
 
-# --------------------------------------------------
-# 1. Abhängigkeiten installieren
-# --------------------------------------------------
-echo "📦 Installiere Abhängigkeiten..."
-npm install axios swr better-sqlite3 @prisma/adapter-better-sqlite3
-npm install -D tailwindcss postcss autoprefixer prisma
-
-# --------------------------------------------------
-# 2. Tailwind CSS konfigurieren
-# --------------------------------------------------
-echo "🎨 Konfiguriere Tailwind CSS..."
+# =========================================
+# 1. Tailwind CSS sauber installieren
+# =========================================
+echo "🎨 Installiere Tailwind CSS..."
+npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p || true
 
 cat > tailwind.config.js <<'TW'
@@ -35,6 +29,7 @@ module.exports = {
 TW
 
 mkdir -p app
+
 cat > app/globals.css <<'CSS'
 @tailwind base;
 @tailwind components;
@@ -45,11 +40,11 @@ body {
 }
 
 .card {
-  @apply bg-white rounded-xl shadow p-6 border-l-4 border-primary;
+  @apply bg-white rounded-lg shadow p-6 border-l-4 border-primary;
 }
 
 .kpi {
-  @apply text-3xl font-bold;
+  @apply text-2xl font-bold;
 }
 
 .label {
@@ -57,9 +52,9 @@ body {
 }
 CSS
 
-# --------------------------------------------------
-# 3. Layout & Navigation
-# --------------------------------------------------
+# =========================================
+# 2. Navigation & Layout
+# =========================================
 cat > app/layout.tsx <<'TSX'
 import "./globals.css";
 import Link from "next/link";
@@ -69,18 +64,9 @@ export const metadata = {
   description: "Vertriebssteuerung neu denken",
 };
 
-const nav = [
-  { name: "Dashboard", path: "/" },
-  { name: "Tenders", path: "/tenders" },
-  { name: "Pipeline", path: "/pipeline" },
-  { name: "Agents", path: "/agents" },
-  { name: "Zones", path: "/zones" },
-  { name: "Buyers", path: "/buyers" },
-  { name: "References", path: "/references" },
-  { name: "Config", path: "/config" },
-];
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const nav = ["dashboard", "tenders", "pipeline", "agents", "zones", "buyers", "references", "config"];
+
   return (
     <html lang="de">
       <body>
@@ -90,8 +76,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </span>
           <div className="flex gap-4 text-sm">
             {nav.map((n) => (
-              <Link key={n.name} href={n.path} className="hover:text-primary">
-                {n.name}
+              <Link key={n} href={n === "dashboard" ? "/" : `/${n}`} className="hover:text-primary">
+                {n.charAt(0).toUpperCase() + n.slice(1)}
               </Link>
             ))}
           </div>
@@ -103,41 +89,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 TSX
 
-# --------------------------------------------------
-# 4. Prisma v7 mit SQLite Adapter
-# --------------------------------------------------
-echo "🗄️ Konfiguriere Prisma..."
-mkdir -p prisma
-
-cat > prisma/schema.prisma <<'PRISMA'
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "sqlite"
-}
-
-model Tender {
-  id           Int     @id @default(autoincrement())
-  title        String
-  region       String
-  trade        String
-  priority     String
-  status       String
-  manualReview Boolean
-  value        Int
-  createdAt    DateTime @default(now())
-}
-
-model PipelineEntry {
-  id        Int     @id @default(autoincrement())
-  title     String
-  stage     String
-  value     Int
-  createdAt DateTime @default(now())
-}
-PRISMA
+# =========================================
+# 3. Prisma v7 mit SQLite Adapter
+# =========================================
+echo "🗄️ Installiere Prisma SQLite Adapter..."
+npm install better-sqlite3 @prisma/adapter-better-sqlite3
 
 cat > lib/prisma.ts <<'TS'
 import { PrismaClient } from "@prisma/client";
@@ -159,12 +115,9 @@ export const prisma =
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 TS
 
-npx prisma generate
-npx prisma migrate dev --name init
-
-# --------------------------------------------------
-# 5. Seed-Daten
-# --------------------------------------------------
+# =========================================
+# 4. Prisma Seed in JS
+# =========================================
 cat > prisma/seed.js <<'JS'
 const { PrismaClient } = require("@prisma/client");
 const { PrismaBetterSQLite3 } = require("@prisma/adapter-better-sqlite3");
@@ -177,7 +130,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   await prisma.tender.createMany({
     data: [
-      { title: "Sicherheitsdienst Magdeburg", region: "Magdeburg", trade: "Sicherheit", priority: "A", status: "neu", manualReview: true, value: 300000 },
+      { title: "Sicherheitsdienst", region: "Magdeburg", trade: "Sicherheit", priority: "A", status: "neu", manualReview: true, value: 300000 },
       { title: "Reinigung Berlin", region: "Berlin", trade: "Reinigung", priority: "B", status: "go", manualReview: false, value: 500000 }
     ],
     skipDuplicates: true,
@@ -191,56 +144,22 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log("🌱 Seed erfolgreich abgeschlossen");
+  console.log("🌱 Seed erfolgreich");
 }
 
-main().finally(() => prisma.$disconnect());
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
 JS
 
 node prisma/seed.js || true
 
-# --------------------------------------------------
-# 6. API-Routen
-# --------------------------------------------------
-mkdir -p app/api/tenders app/api/pipeline
-
-cat > app/api/tenders/route.ts <<'TS'
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-export async function GET() {
-  const data = await prisma.tender.findMany();
-  return NextResponse.json(data);
-}
-
-export async function POST(req: Request) {
-  const body = await req.json();
-  const data = await prisma.tender.create({ data: body });
-  return NextResponse.json(data);
-}
-TS
-
-cat > app/api/pipeline/route.ts <<'TS'
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-export async function GET() {
-  const data = await prisma.pipelineEntry.findMany();
-  return NextResponse.json(data);
-}
-
-export async function POST(req: Request) {
-  const body = await req.json();
-  const data = await prisma.pipelineEntry.create({ data: body });
-  return NextResponse.json(data);
-}
-TS
-
-# --------------------------------------------------
-# 7. Dashboard
-# --------------------------------------------------
+# =========================================
+# 5. Modernes Dashboard
+# =========================================
 cat > app/page.tsx <<'TSX'
 "use client";
+
 import useSWR from "swr";
 import axios from "axios";
 
@@ -268,6 +187,7 @@ export default function Dashboard() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Vertriebssteuerung neu denken.</h1>
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <Card title="Neu eingegangen" value={pending} />
         <Card title="Manuell prüfen" value={manual} />
@@ -275,6 +195,7 @@ export default function Dashboard() {
         <Card title="Überfällig" value={overdue} color="text-red-500" />
         <Card title="Gesamtlage" value={status} color={status === "GUT" ? "text-green-600" : "text-orange-500"} />
       </div>
+
       <div className="card">
         <div className="label">Weighted Pipeline</div>
         <div className="kpi text-primary">{Math.round(weighted / 1000)}k €</div>
@@ -284,29 +205,12 @@ export default function Dashboard() {
 }
 TSX
 
-# --------------------------------------------------
-# 8. Platzhalter-Seiten
-# --------------------------------------------------
-for page in tenders pipeline agents zones buyers references config; do
-mkdir -p app/$page
-cat > app/$page/page.tsx <<TSX
-export default function Page() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">${page^}</h1>
-      <p>Dieses Modul ist vollständig vorbereitet und bereit für Erweiterungen.</p>
-    </div>
-  );
-}
-TSX
-done
-
-# --------------------------------------------------
-# 9. Git Commit & Push
-# --------------------------------------------------
+# =========================================
+# 6. Git Commit & Push
+# =========================================
 git add .
-git commit -m "feat: RUWE Bid OS full master setup with Prisma v7, Tailwind and dashboard" || true
+git commit -m "fix: prisma v7 adapter, restore tailwind design, seed data and dashboard" || true
 git push origin main || true
 
-echo "✅ RUWE Bid OS vollständig eingerichtet!"
-echo "👉 Starte jetzt: npm run dev"
+echo "✅ FINAL FIX erfolgreich abgeschlossen!"
+echo "👉 Bitte Server neu starten: npm run dev"

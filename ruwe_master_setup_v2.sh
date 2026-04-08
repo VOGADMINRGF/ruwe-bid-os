@@ -1,20 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "🚀 RUWE Bid OS – Master Setup startet..."
+echo "🚀 RUWE Bid OS – Master Setup v2 startet..."
 
 # --------------------------------------------------
-# 1. Abhängigkeiten installieren
+# 1. Tailwind CSS (stabile Version) installieren
 # --------------------------------------------------
-echo "📦 Installiere Abhängigkeiten..."
-npm install axios swr better-sqlite3 @prisma/adapter-better-sqlite3
-npm install -D tailwindcss postcss autoprefixer prisma
-
-# --------------------------------------------------
-# 2. Tailwind CSS konfigurieren
-# --------------------------------------------------
-echo "🎨 Konfiguriere Tailwind CSS..."
-npx tailwindcss init -p || true
+echo "🎨 Installiere Tailwind CSS v3..."
+npm install -D tailwindcss@3.4.13 postcss autoprefixer
+npx tailwindcss init -p
 
 cat > tailwind.config.js <<'TW'
 /** @type {import('tailwindcss').Config} */
@@ -34,6 +28,15 @@ module.exports = {
 };
 TW
 
+cat > postcss.config.js <<'PC'
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+PC
+
 mkdir -p app
 cat > app/globals.css <<'CSS'
 @tailwind base;
@@ -41,24 +44,14 @@ cat > app/globals.css <<'CSS'
 @tailwind utilities;
 
 body {
-  @apply bg-gray-100 text-gray-900;
-}
-
-.card {
-  @apply bg-white rounded-xl shadow p-6 border-l-4 border-primary;
-}
-
-.kpi {
-  @apply text-3xl font-bold;
-}
-
-.label {
-  @apply text-sm text-gray-500;
+  background-color: #f3f4f6;
+  color: #111827;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 CSS
 
 # --------------------------------------------------
-# 3. Layout & Navigation
+# 2. Layout & Navigation
 # --------------------------------------------------
 cat > app/layout.tsx <<'TSX'
 import "./globals.css";
@@ -86,11 +79,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <nav className="bg-black text-white px-6 py-4 flex gap-6 items-center">
           <span className="font-bold text-lg">
-            RUWE <span className="text-primary">Bid OS</span>
+            RUWE <span className="text-orange-500">Bid OS</span>
           </span>
           <div className="flex gap-4 text-sm">
             {nav.map((n) => (
-              <Link key={n.name} href={n.path} className="hover:text-primary">
+              <Link key={n.name} href={n.path} className="hover:text-orange-500">
                 {n.name}
               </Link>
             ))}
@@ -104,11 +97,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 TSX
 
 # --------------------------------------------------
-# 4. Prisma v7 mit SQLite Adapter
+# 3. Prisma v7 korrekt konfigurieren
 # --------------------------------------------------
 echo "🗄️ Konfiguriere Prisma..."
-mkdir -p prisma
+npm install better-sqlite3 @prisma/adapter-better-sqlite3
 
+mkdir -p prisma
 cat > prisma/schema.prisma <<'PRISMA'
 generator client {
   provider = "prisma-client-js"
@@ -142,18 +136,13 @@ PRISMA
 cat > lib/prisma.ts <<'TS'
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSQLite3 } from "@prisma/adapter-better-sqlite3";
-import Database from "better-sqlite3";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
-
-const sqlite = new Database("prisma/dev.db");
-const adapter = new PrismaBetterSQLite3(sqlite);
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    adapter,
-    log: ["error", "warn"],
+    adapter: new PrismaBetterSQLite3({ url: "file:./prisma/dev.db" }),
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
@@ -163,16 +152,15 @@ npx prisma generate
 npx prisma migrate dev --name init
 
 # --------------------------------------------------
-# 5. Seed-Daten
+# 4. Seed-Daten
 # --------------------------------------------------
 cat > prisma/seed.js <<'JS'
 const { PrismaClient } = require("@prisma/client");
 const { PrismaBetterSQLite3 } = require("@prisma/adapter-better-sqlite3");
-const Database = require("better-sqlite3");
 
-const sqlite = new Database("prisma/dev.db");
-const adapter = new PrismaBetterSQLite3(sqlite);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({
+  adapter: new PrismaBetterSQLite3({ url: "file:./prisma/dev.db" }),
+});
 
 async function main() {
   await prisma.tender.createMany({
@@ -200,7 +188,7 @@ JS
 node prisma/seed.js || true
 
 # --------------------------------------------------
-# 6. API-Routen
+# 5. API-Routen
 # --------------------------------------------------
 mkdir -p app/api/tenders app/api/pipeline
 
@@ -237,7 +225,7 @@ export async function POST(req: Request) {
 TS
 
 # --------------------------------------------------
-# 7. Dashboard
+# 6. Dashboard
 # --------------------------------------------------
 cat > app/page.tsx <<'TSX'
 "use client";
@@ -259,9 +247,9 @@ export default function Dashboard() {
   const status = overdue > 0 ? "KRITISCH" : manual > 0 ? "PRÜFEN" : "GUT";
 
   const Card = ({ title, value, color = "text-black" }: any) => (
-    <div className="card">
-      <div className="label">{title}</div>
-      <div className={`kpi ${color}`}>{value}</div>
+    <div className="bg-white rounded-xl shadow p-6 border-l-4 border-orange-500">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className={`text-3xl font-bold ${color}`}>{value}</div>
     </div>
   );
 
@@ -275,9 +263,9 @@ export default function Dashboard() {
         <Card title="Überfällig" value={overdue} color="text-red-500" />
         <Card title="Gesamtlage" value={status} color={status === "GUT" ? "text-green-600" : "text-orange-500"} />
       </div>
-      <div className="card">
-        <div className="label">Weighted Pipeline</div>
-        <div className="kpi text-primary">{Math.round(weighted / 1000)}k €</div>
+      <div className="bg-white rounded-xl shadow p-6 border-l-4 border-orange-500">
+        <div className="text-sm text-gray-500">Weighted Pipeline</div>
+        <div className="text-3xl font-bold text-orange-500">{Math.round(weighted / 1000)}k €</div>
       </div>
     </div>
   );
@@ -285,15 +273,16 @@ export default function Dashboard() {
 TSX
 
 # --------------------------------------------------
-# 8. Platzhalter-Seiten
+# 7. Modul-Seiten
 # --------------------------------------------------
 for page in tenders pipeline agents zones buyers references config; do
-mkdir -p app/$page
-cat > app/$page/page.tsx <<TSX
+  mkdir -p app/$page
+  TITLE=$(echo $page | sed 's/.*/\u&/')
+  cat > app/$page/page.tsx <<TSX
 export default function Page() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">${page^}</h1>
+      <h1 className="text-2xl font-bold mb-4">$TITLE</h1>
       <p>Dieses Modul ist vollständig vorbereitet und bereit für Erweiterungen.</p>
     </div>
   );
@@ -302,10 +291,10 @@ TSX
 done
 
 # --------------------------------------------------
-# 9. Git Commit & Push
+# 8. Git Commit & Push
 # --------------------------------------------------
 git add .
-git commit -m "feat: RUWE Bid OS full master setup with Prisma v7, Tailwind and dashboard" || true
+git commit -m "feat: RUWE Bid OS full master setup v2 (stable)" || true
 git push origin main || true
 
 echo "✅ RUWE Bid OS vollständig eingerichtet!"
