@@ -1,4 +1,5 @@
 import { readStore } from "@/lib/storage";
+import SiteRuleEditor from "@/components/forms/SiteRuleEditor";
 
 export default async function SiteRulesPage() {
   const db = await readStore();
