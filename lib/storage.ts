@@ -60,10 +60,7 @@ const EMPTY_STORE: StoreShape = {
   buyers: [],
   agents: [],
   agentKeywords: [],
-  globalKeywords: {
-    positive: [],
-    negative: []
-  },
+  globalKeywords: { positive: [], negative: [] },
   tenders: [],
   pipeline: [],
   references: [],
@@ -105,93 +102,68 @@ async function readJsonFile(): Promise<StoreShape> {
     const raw = await fs.readFile(DATA_FILE, "utf8");
     return normalizeStore(JSON.parse(raw));
   } catch {
-    return EMPTY_STORE;
+    return structuredClone(EMPTY_STORE);
   }
 }
 
 async function writeJsonFile(db: StoreShape) {
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(db, null, 2) + "\n", "utf8");
+  await fs.writeFile(DATA_FILE, JSON.stringify(normalizeStore(db), null, 2) + "\n", "utf8");
+}
+
+async function getMongoClientAndDb() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) return null;
+  const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
+  const client = new MongoClient(uri);
+  await client.connect();
+  return { client, db: client.db(dbName) };
 }
 
 async function readMongoStore(): Promise<StoreShape | null> {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) return null;
-
-  const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
-  const client = new MongoClient(uri);
+  const conn = await getMongoClientAndDb();
+  if (!conn) return null;
 
   try {
-    await client.connect();
-    const db = client.db(dbName);
-
     const collections: StoreCollection[] = [
-      "meta",
-      "config",
-      "sourceRegistry",
-      "sourceStats",
-      "sourceHits",
-      "sites",
-      "serviceAreas",
-      "siteTradeRules",
-      "buyers",
-      "agents",
-      "agentKeywords",
-      "globalKeywords",
-      "tenders",
-      "pipeline",
-      "references",
-      "graphNodes",
-      "graphEdges"
+      "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
+      "pipeline","references","graphNodes","graphEdges"
     ];
 
     const out: any = {};
-
     for (const name of collections) {
-      const rows = await db.collection(name).find({}).toArray();
-
-      if (name === "meta" || name === "config") {
-        out[name] = rows[0] || {};
-      } else if (name === "globalKeywords") {
-        out[name] = rows[0] || { positive: [], negative: [] };
+      const rows = await conn.db.collection(name).find({}).toArray();
+      if (name === "meta" || name === "config" || name === "globalKeywords") {
+        out[name] = rows[0] || (name === "globalKeywords" ? { positive: [], negative: [] } : {});
       } else {
         out[name] = rows;
       }
     }
-
     return normalizeStore(out);
   } catch {
     return null;
   } finally {
-    await client.close();
+    await conn.client.close();
   }
 }
 
 async function replaceMongoCollection(name: StoreCollection, value: any) {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) return false;
-
-  const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
-  const client = new MongoClient(uri);
+  const conn = await getMongoClientAndDb();
+  if (!conn) return false;
 
   try {
-    await client.connect();
-    const db = client.db(dbName);
-    const col = db.collection(name);
-
+    const col = conn.db.collection(name);
     await col.deleteMany({});
 
     if (name === "meta" || name === "config" || name === "globalKeywords") {
-      if (value && (typeof value === "object")) {
-        await col.insertOne(value);
-      }
+      if (value && typeof value === "object") await col.insertOne(value);
     } else if (Array.isArray(value) && value.length) {
       await col.insertMany(value);
     }
-
     return true;
   } finally {
-    await client.close();
+    await conn.client.close();
   }
 }
 
@@ -201,7 +173,6 @@ export async function readStore(): Promise<StoreShape> {
   return readJsonFile();
 }
 
-/* Rückwärtskompatibilität */
 export const readDb = readStore;
 export const readJsonDb = readJsonFile;
 
@@ -210,38 +181,69 @@ export async function replaceCollection(name: StoreCollection, value: any) {
   if (mongoOk) return;
 
   const db = await readJsonFile();
-
   if (name === "meta" || name === "config" || name === "globalKeywords") {
     db[name] = value;
   } else {
     db[name] = Array.isArray(value) ? value : [];
   }
-
   await writeJsonFile(db);
 }
 
-/* Rückwärtskompatibilität */
+export async function appendToCollection(name: StoreCollection, row: any) {
+  if (name === "meta" || name === "config" || name === "globalKeywords") {
+    throw new Error(`appendToCollection is not supported for singleton collection: ${name}`);
+  }
+  const db = await readStore();
+  const current = Array.isArray(db[name]) ? db[name] : [];
+  const next = [...current, row];
+  await replaceCollection(name, next);
+  return row;
+}
+
+export async function readItemById(name: StoreCollection, id: string) {
+  const db = await readStore();
+  const current = db[name];
+  if (!Array.isArray(current)) return null;
+  return current.find((x: any) => x?.id === id) || null;
+}
+
+export async function updateById(name: StoreCollection, id: string, patch: any) {
+  if (name === "meta" || name === "config" || name === "globalKeywords") {
+    throw new Error(`updateById is not supported for singleton collection: ${name}`);
+  }
+  const db = await readStore();
+  const current = Array.isArray(db[name]) ? db[name] : [];
+  const idx = current.findIndex((x: any) => x?.id === id);
+  if (idx === -1) return null;
+
+  const updated = {
+    ...current[idx],
+    ...patch,
+    id
+  };
+  const next = [...current];
+  next[idx] = updated;
+  await replaceCollection(name, next);
+  return updated;
+}
+
+export async function deleteById(name: StoreCollection, id: string) {
+  if (name === "meta" || name === "config" || name === "globalKeywords") {
+    throw new Error(`deleteById is not supported for singleton collection: ${name}`);
+  }
+  const db = await readStore();
+  const current = Array.isArray(db[name]) ? db[name] : [];
+  const next = current.filter((x: any) => x?.id !== id);
+  await replaceCollection(name, next);
+  return { ok: true };
+}
+
 export async function writeDb(next: StoreShape) {
   const collections: StoreCollection[] = [
-    "meta",
-    "config",
-    "sourceRegistry",
-    "sourceStats",
-    "sourceHits",
-    "sites",
-    "serviceAreas",
-    "siteTradeRules",
-    "buyers",
-    "agents",
-    "agentKeywords",
-    "globalKeywords",
-    "tenders",
-    "pipeline",
-    "references",
-    "graphNodes",
-    "graphEdges"
+    "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
+    "pipeline","references","graphNodes","graphEdges"
   ];
-
   for (const key of collections) {
     await replaceCollection(key, next[key]);
   }
@@ -254,3 +256,5 @@ export async function writeJsonDb(next: StoreShape) {
 export function createId(prefix = "id") {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
+
+export const nextId = createId;
