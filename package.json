@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node scripts/reseed.mjs",
-    "migrate:mongo": "node scripts/migrate-json-to-mongo.mjs"
+    "migrate:mongo": "node scripts/migrate-json-to-mongo.mjs",
+    "ops:live": "curl -s http://localhost:3000/api/ops/live-ingest",
+    "ops:analyze": "curl -s -X POST http://localhost:3000/api/ops/analyze-hits"
   },
   "dependencies": {
     "@next/env": "^16.2.3",

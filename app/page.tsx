@@ -58,6 +58,7 @@ export default async function DashboardPage() {
           </div>
           <div className="row">
             <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
+            <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
             <Link className="button-secondary" href="/dashboard/smoke">Smoke</Link>
             <Link className="button-secondary" href="/dashboard/ai-smoke">AI Test</Link>
             <Link className="button-secondary" href="/dashboard/source-tests">Tests</Link>
