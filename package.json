@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/reseed.mjs"
+    "seed": "node scripts/reseed.mjs",
+    "migrate:mongo": "node scripts/migrate-json-to-mongo.mjs"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.7.0",
@@ -15,6 +16,7 @@
     "axios": "^1.15.0",
     "better-sqlite3": "^12.8.0",
     "date-fns": "^4.1.0",
+    "mongodb": "^7.1.1",
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",

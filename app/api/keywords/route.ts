@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 
 export async function GET() {
-  const db = await readDb();
-  const keywords = (db.siteTradeRules || []).map((r: any) => ({
+  const db = await readStore();
+  const rows = (db.siteTradeRules || []).map((r: any) => ({
     id: r.id,
     siteId: r.siteId,
     trade: r.trade,
@@ -11,5 +11,5 @@ export async function GET() {
     negative: r.keywordsNegative || [],
     regionNotes: r.regionNotes || ""
   }));
-  return NextResponse.json(keywords);
+  return NextResponse.json(rows);
 }

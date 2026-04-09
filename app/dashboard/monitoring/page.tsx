@@ -1,7 +1,7 @@
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 
 export default async function MonitoringPage() {
-  const db = await readDb();
+  const db = await readStore();
   const stats = db.sourceStats || [];
   return (
     <div className="stack">
@@ -11,7 +11,18 @@ export default async function MonitoringPage() {
       </div>
       <div className="card table-wrap">
         <table className="table">
-          <thead><tr><th>Quelle</th><th>Letzter Abruf</th><th>letzter Monat</th><th>seit letztem Abruf</th><th>vorausgewählt</th><th>Go</th><th>Fehler</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Quelle</th>
+              <th>Letzter Abruf</th>
+              <th>letzter Monat</th>
+              <th>seit letztem Abruf</th>
+              <th>vorausgewählt</th>
+              <th>Go</th>
+              <th>Fehler</th>
+              <th>Dubletten</th>
+            </tr>
+          </thead>
           <tbody>
             {stats.map((s: any) => (
               <tr key={s.id}>
@@ -22,6 +33,7 @@ export default async function MonitoringPage() {
                 <td>{s.prefilteredLast30Days}</td>
                 <td>{s.goLast30Days}</td>
                 <td>{s.errorCountLastRun}</td>
+                <td>{s.duplicateCountLastRun}</td>
               </tr>
             ))}
           </tbody>

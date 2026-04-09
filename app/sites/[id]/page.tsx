@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 import { siteTradeOperationalRows } from "@/lib/siteLogic";
 
 function capacityBadge(status: string) {
@@ -10,22 +10,18 @@ function capacityBadge(status: string) {
 
 export default async function SiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const db = await readDb();
+  const db = await readStore();
   const site = (db.sites || []).find((x: any) => x.id === id);
   if (!site) return notFound();
 
-  const rules = db.siteTradeRules || [];
   const serviceAreas = (db.serviceAreas || []).filter((x: any) => x.siteId === id);
-  const tenders = db.tenders || [];
-  const rows = siteTradeOperationalRows(site, rules, tenders);
+  const rows = siteTradeOperationalRows(site, db.siteTradeRules || [], db.tenders || []);
 
   return (
     <div className="stack">
       <div>
         <h1 className="h1">{site.name}</h1>
-        <p className="sub">
-          Standortdetail mit konfigurierbaren Gewerken, Radiusstufen, Kapazitäten und nächstgrößerer Klasse.
-        </p>
+        <p className="sub">Standortdetail mit bearbeitbarer Zielstruktur für Gewerk, Radius, Kapazität und verpasste Radiusklasse.</p>
       </div>
 
       <div className="grid grid-4">
@@ -55,6 +51,7 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
                 <th>Nächste Klasse</th>
                 <th>Manuell prüfen</th>
                 <th>Status</th>
+                <th>Keywords</th>
               </tr>
             </thead>
             <tbody>
@@ -69,32 +66,11 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
                   <td>{row.nextBandCount}</td>
                   <td>{row.nextBandManualCandidates}</td>
                   <td><span className={capacityBadge(row.capacityStatus)}>{row.capacityStatus}</span></td>
+                  <td>{(row.rule.keywordsPositive || []).join(", ")}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div className="grid grid-2">
-        <div className="card">
-          <div className="section-title">Keywords & Hinweise</div>
-          <pre className="doc">{JSON.stringify(rows.map((r: any) => ({
-            trade: r.rule.trade,
-            priority: r.rule.priority,
-            positive: r.rule.keywordsPositive,
-            negative: r.rule.keywordsNegative,
-            regionNotes: r.rule.regionNotes
-          })), null, 2)}</pre>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Interpretation</div>
-          <div className="stack">
-            <div className="meta">„Im Scope“ = Primär + Sekundär, also aktuell aktiv gespielter Suchraum.</div>
-            <div className="meta">„Nächste Klasse“ = Tertiärband oberhalb des aktuellen Suchraums.</div>
-            <div className="meta">„Manuell prüfen“ = potenzielle zusätzliche Chancen bei Radiuserweiterung.</div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { createId, readDb, writeDb } from "@/lib/db";
+import { appendToCollection, nextId, readStore } from "@/lib/storage";
 
 export async function GET() {
-  const db = await readDb();
+  const db = await readStore();
   return NextResponse.json(db.sites || []);
 }
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const db = await readDb();
-  const item = { id: createId("site"), ...body };
-  db.sites.unshift(item);
-  await writeDb(db);
+  const item = { id: nextId("site"), ...body };
+  await appendToCollection("sites", item);
   return NextResponse.json(item);
 }
