@@ -18,6 +18,9 @@ export default async function QueryCenterPage() {
         <form action="/api/ops/query-ingest" method="POST">
           <button className="button" type="submit">Query-Ingest starten</button>
         </form>
+        <form action="/api/ops/analyze-query-candidates" method="POST">
+          <button className="button-secondary" type="submit">Nur Query-/Manual-Kandidaten mit AI prüfen</button>
+        </form>
       </div>
 
       <div className="grid grid-2">
