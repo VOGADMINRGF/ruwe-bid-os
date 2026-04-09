@@ -80,7 +80,7 @@ export default async function DashboardPage() {
             <p className="meta">{narrative.third}</p>
             <p className="meta">{narrative.fourth}</p>
             <p className="meta" style={{ marginTop: 12 }}>
-              KI-Setup: GPT als Primär-Orchestrator, Claude als Tiefenanalyse und Second Opinion.
+              KI-Setup: GPT trifft die Erstbewertung. Claude wird bei Grenzfällen, hohen Volumina, langen Laufzeiten oder Unsicherheit als Zweitmeinung zugeschaltet.
             </p>
           </div>
         </div>
