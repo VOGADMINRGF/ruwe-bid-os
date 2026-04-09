@@ -1,8 +1,8 @@
 {
   "meta": {
     "appName": "RUWE Bid OS",
-    "version": "site-focus-upgrade",
-    "lastSeededAt": "2026-04-08T23:00:00.000Z",
+    "version": "phase5-operational-upgrade",
+    "lastSeededAt": "2026-04-08T23:30:00.000Z",
     "lastSuccessfulIngestionAt": "2026-04-08T22:45:00.000Z",
     "lastSuccessfulIngestionSource": "TED Europa / Bund.de Aggregation",
     "pollingSeconds": 60,
@@ -12,133 +12,176 @@
     "ingestionErrorsLastRun": 0
   },
   "config": {
+    "dashboard": {
+      "compactTopBar": true,
+      "showMonitoringStrip": true,
+      "showPrefilterMetrics": true
+    },
     "assessmentRules": {
-      "good": {
-        "minStrongShare": 0.4,
-        "maxOverdue": 0,
-        "minGoShare": 0.25
-      },
-      "critical": {
-        "maxGoShare": 0.15,
-        "minOverdue": 2
-      }
-    },
-    "tradeMatrix": {
-      "Facility": { "baseWeight": 1.0 },
-      "Sicherheit": { "baseWeight": 1.1 },
-      "Reinigung": { "baseWeight": 0.95 },
-      "Hausmeister": { "baseWeight": 0.9 },
-      "Grünpflege": { "baseWeight": 0.7 },
-      "Winterdienst": { "baseWeight": 0.65 }
-    },
-    "sources": [
-      { "id": "s1", "name": "TED Europa", "type": "rss", "url": "https://ted.europa.eu" },
-      { "id": "s2", "name": "Bund.de", "type": "portal", "url": "https://www.service.bund.de" },
-      { "id": "s3", "name": "DTVP", "type": "portal", "url": "https://www.dtvp.de" }
-    ]
+      "good": { "minGoShare": 0.25, "maxOverdue": 0 },
+      "critical": { "maxGoShare": 0.15, "minOverdue": 2 }
+    }
   },
   "sites": [
     {
-      "id": "site1",
-      "name": "RUWE Leipzig",
-      "city": "Leipzig",
-      "state": "Sachsen",
-      "active": true,
-      "primaryRadiusKm": 45,
-      "secondaryRadiusKm": 70,
-      "ownerId": "a1",
-      "notes": "Ost-Fokus für Facility und Sicherheit."
-    },
-    {
-      "id": "site2",
-      "name": "RUWE Magdeburg",
-      "city": "Magdeburg",
-      "state": "Sachsen-Anhalt",
-      "active": true,
-      "primaryRadiusKm": 40,
-      "secondaryRadiusKm": 60,
-      "ownerId": "a2",
-      "notes": "Starker Sicherheit-/Reinigungsfokus."
-    },
-    {
-      "id": "site3",
-      "name": "RUWE Gera",
-      "city": "Gera",
-      "state": "Thüringen",
-      "active": true,
-      "primaryRadiusKm": 35,
-      "secondaryRadiusKm": 55,
-      "ownerId": "a3",
-      "notes": "Kommunal und Hausmeister/FM."
-    },
-    {
-      "id": "site4",
-      "name": "RUWE Berlin selektiv",
+      "id": "site_berlin",
+      "name": "RUWE Gruppe Berlin",
       "city": "Berlin",
       "state": "Berlin",
+      "type": "Zentrale",
       "active": true,
       "primaryRadiusKm": 25,
-      "secondaryRadiusKm": 35,
-      "ownerId": "a4",
-      "notes": "Nur selektive Teilnahme."
-    }
-  ],
-  "siteTradeRules": [
-    { "id": "str1", "siteId": "site1", "trade": "Facility", "priority": "hoch", "primaryRadiusKm": 45, "secondaryRadiusKm": 70, "enabled": true },
-    { "id": "str2", "siteId": "site1", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
-    { "id": "str3", "siteId": "site1", "trade": "Reinigung", "priority": "mittel", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
-
-    { "id": "str4", "siteId": "site2", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
-    { "id": "str5", "siteId": "site2", "trade": "Reinigung", "priority": "hoch", "primaryRadiusKm": 45, "secondaryRadiusKm": 65, "enabled": true },
-    { "id": "str6", "siteId": "site2", "trade": "Facility", "priority": "mittel", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
-
-    { "id": "str7", "siteId": "site3", "trade": "Hausmeister", "priority": "hoch", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
-    { "id": "str8", "siteId": "site3", "trade": "Facility", "priority": "hoch", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
-    { "id": "str9", "siteId": "site3", "trade": "Reinigung", "priority": "mittel", "primaryRadiusKm": 30, "secondaryRadiusKm": 45, "enabled": true },
-
-    { "id": "str10", "siteId": "site4", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 25, "secondaryRadiusKm": 35, "enabled": true },
-    { "id": "str11", "siteId": "site4", "trade": "Facility", "priority": "mittel", "primaryRadiusKm": 20, "secondaryRadiusKm": 30, "enabled": true }
-  ],
-  "zones": [
+      "secondaryRadiusKm": 40,
+      "notes": "Zentrale / selektiv und preissensibel."
+    },
     {
-      "id": "z1",
-      "name": "Leipzig/Halle",
-      "homeBase": "Leipzig",
-      "state": "Sachsen/Sachsen-Anhalt",
+      "id": "site_torgau",
+      "name": "HBO GmbH Torgau",
+      "city": "Torgau",
+      "state": "Sachsen",
+      "type": "Gesellschaft",
+      "active": true,
       "primaryRadiusKm": 45,
       "secondaryRadiusKm": 70,
-      "priorityTrades": ["Facility", "Sicherheit"],
-      "supportedTrades": ["Reinigung", "Hausmeister"]
+      "notes": "Starker operativer Ost-Fokus."
     },
     {
-      "id": "z2",
-      "name": "Magdeburg/Salzlandkreis",
-      "homeBase": "Magdeburg",
-      "state": "Sachsen-Anhalt",
-      "primaryRadiusKm": 40,
-      "secondaryRadiusKm": 60,
-      "priorityTrades": ["Sicherheit", "Reinigung"],
-      "supportedTrades": ["Facility"]
-    },
-    {
-      "id": "z3",
-      "name": "Gera/Altenburg",
-      "homeBase": "Gera",
-      "state": "Thüringen",
+      "id": "site_strausberg",
+      "name": "RUWE AERO Strausberg",
+      "city": "Strausberg",
+      "state": "Brandenburg",
+      "type": "Gesellschaft",
+      "active": true,
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
-      "priorityTrades": ["Hausmeister", "Facility"],
-      "supportedTrades": ["Reinigung"]
+      "notes": "Sonderrollen/luftfahrtnah, aber hier als regulärer Site-Anchor modelliert."
     },
     {
-      "id": "z4",
-      "name": "Berlin selektiv",
-      "homeBase": "Berlin",
-      "state": "Berlin",
+      "id": "site_zeitz",
+      "name": "TÜ Gebäudeservice Zeitz",
+      "city": "Zeitz",
+      "state": "Sachsen-Anhalt",
+      "type": "Gesellschaft",
+      "active": true,
+      "primaryRadiusKm": 40,
+      "secondaryRadiusKm": 60,
+      "notes": "Sachsen-Anhalt/Südost-Achse."
+    }
+  ],
+  "serviceAreas": [
+    { "id": "sa1", "name": "Berlin und Umgebung", "siteId": "site_berlin", "state": "Berlin/Brandenburg", "active": true },
+    { "id": "sa2", "name": "Torgau", "siteId": "site_torgau", "state": "Sachsen", "active": true },
+    { "id": "sa3", "name": "Crimmitschau", "siteId": "site_torgau", "state": "Sachsen", "active": true },
+    { "id": "sa4", "name": "Schmölln", "siteId": "site_torgau", "state": "Thüringen", "active": true },
+    { "id": "sa5", "name": "Magdeburg", "siteId": "site_zeitz", "state": "Sachsen-Anhalt", "active": true },
+    { "id": "sa6", "name": "Schkeuditz", "siteId": "site_torgau", "state": "Sachsen", "active": true },
+    { "id": "sa7", "name": "Zeitz", "siteId": "site_zeitz", "state": "Sachsen-Anhalt", "active": true },
+    { "id": "sa8", "name": "Limbach-Oberfrohna", "siteId": "site_torgau", "state": "Sachsen", "active": true }
+  ],
+  "trades": [
+    { "id": "tr1", "name": "Facility" },
+    { "id": "tr2", "name": "Sicherheit" },
+    { "id": "tr3", "name": "Reinigung" },
+    { "id": "tr4", "name": "Hausmeister" },
+    { "id": "tr5", "name": "Grünpflege" },
+    { "id": "tr6", "name": "Winterdienst" }
+  ],
+  "siteTradeRules": [
+    {
+      "id": "rule1",
+      "siteId": "site_berlin",
+      "trade": "Sicherheit",
+      "priority": "hoch",
       "primaryRadiusKm": 25,
       "secondaryRadiusKm": 35,
-      "priorityTrades": ["Sicherheit"],
-      "supportedTrades": ["Facility"]
+      "enabled": true,
+      "keywordsPositive": ["objektschutz", "wachschutz", "sicherheitsdienst"],
+      "keywordsNegative": ["krankenhausgroßsicherheit", "bundeswehr"],
+      "regionNotes": "Berlin selektiv"
+    },
+    {
+      "id": "rule2",
+      "siteId": "site_berlin",
+      "trade": "Facility",
+      "priority": "mittel",
+      "primaryRadiusKm": 20,
+      "secondaryRadiusKm": 30,
+      "enabled": true,
+      "keywordsPositive": ["hausmeister", "facility", "objektservice"],
+      "keywordsNegative": ["hochkomplexe tgm"],
+      "regionNotes": "Nur selektiv"
+    },
+    {
+      "id": "rule3",
+      "siteId": "site_torgau",
+      "trade": "Facility",
+      "priority": "hoch",
+      "primaryRadiusKm": 45,
+      "secondaryRadiusKm": 70,
+      "enabled": true,
+      "keywordsPositive": ["facility", "objektservice", "hausmeister", "unterhaltsreinigung"],
+      "keywordsNegative": [],
+      "regionNotes": "Ost-Hub"
+    },
+    {
+      "id": "rule4",
+      "siteId": "site_torgau",
+      "trade": "Reinigung",
+      "priority": "hoch",
+      "primaryRadiusKm": 50,
+      "secondaryRadiusKm": 75,
+      "enabled": true,
+      "keywordsPositive": ["unterhaltsreinigung", "glasreinigung", "gebäudereinigung"],
+      "keywordsNegative": [],
+      "regionNotes": "stark"
+    },
+    {
+      "id": "rule5",
+      "siteId": "site_torgau",
+      "trade": "Sicherheit",
+      "priority": "mittel",
+      "primaryRadiusKm": 35,
+      "secondaryRadiusKm": 55,
+      "enabled": true,
+      "keywordsPositive": ["sicherheitsdienst", "objektschutz"],
+      "keywordsNegative": [],
+      "regionNotes": "nur bei Fit"
+    },
+    {
+      "id": "rule6",
+      "siteId": "site_zeitz",
+      "trade": "Reinigung",
+      "priority": "hoch",
+      "primaryRadiusKm": 40,
+      "secondaryRadiusKm": 60,
+      "enabled": true,
+      "keywordsPositive": ["reinigung", "glasreinigung", "sonderreinigung"],
+      "keywordsNegative": [],
+      "regionNotes": "Sachsen-Anhalt"
+    },
+    {
+      "id": "rule7",
+      "siteId": "site_zeitz",
+      "trade": "Hausmeister",
+      "priority": "hoch",
+      "primaryRadiusKm": 35,
+      "secondaryRadiusKm": 55,
+      "enabled": true,
+      "keywordsPositive": ["hausmeister", "objektbetreuung"],
+      "keywordsNegative": [],
+      "regionNotes": "kommunal interessant"
+    },
+    {
+      "id": "rule8",
+      "siteId": "site_strausberg",
+      "trade": "Sicherheit",
+      "priority": "mittel",
+      "primaryRadiusKm": 30,
+      "secondaryRadiusKm": 50,
+      "enabled": true,
+      "keywordsPositive": ["sicherheitsdienst", "wachdienst"],
+      "keywordsNegative": [],
+      "regionNotes": "Brandenburg"
     }
   ],
   "buyers": [
@@ -148,12 +191,12 @@
     { "id": "b4", "name": "Landratsamt Altenburg", "type": "öffentlich", "strategic": true }
   ],
   "agents": [
-    { "id": "a1", "name": "Agent 1", "focus": "Facility Ost", "level": "Koordinator", "region": "Leipzig/Halle", "winRate": 0.41, "pipelineValue": 4200000 },
-    { "id": "a2", "name": "Agent 2", "focus": "Sicherheit", "level": "Koordinator", "region": "Magdeburg/Salzlandkreis", "winRate": 0.37, "pipelineValue": 3100000 },
-    { "id": "a3", "name": "Agent 3", "focus": "Kommunal", "level": "Spezialist", "region": "Gera/Altenburg", "winRate": 0.29, "pipelineValue": 1800000 },
-    { "id": "a4", "name": "Agent 4", "focus": "Berlin selektiv", "level": "Spezialist", "region": "Berlin selektiv", "winRate": 0.18, "pipelineValue": 950000 },
-    { "id": "a5", "name": "Agent 5", "focus": "Assistenz Ost", "level": "Assistenz", "region": "Leipzig/Halle", "winRate": 0.12, "pipelineValue": 250000 },
-    { "id": "a6", "name": "Agent 6", "focus": "Assistenz Zentral", "level": "Assistenz", "region": "Magdeburg/Salzlandkreis", "winRate": 0.10, "pipelineValue": 150000 }
+    { "id": "a1", "name": "Agent 1", "focus": "Facility Ost", "level": "Koordinator", "region": "Torgau/Ost", "winRate": 0.41, "pipelineValue": 4200000 },
+    { "id": "a2", "name": "Agent 2", "focus": "Sicherheit", "level": "Koordinator", "region": "Sachsen-Anhalt", "winRate": 0.37, "pipelineValue": 3100000 },
+    { "id": "a3", "name": "Agent 3", "focus": "Kommunal", "level": "Spezialist", "region": "Thüringen/Südost", "winRate": 0.29, "pipelineValue": 1800000 },
+    { "id": "a4", "name": "Agent 4", "focus": "Berlin selektiv", "level": "Spezialist", "region": "Berlin", "winRate": 0.18, "pipelineValue": 950000 },
+    { "id": "a5", "name": "Agent 5", "focus": "Assistenz Ost", "level": "Assistenz", "region": "Ost", "winRate": 0.12, "pipelineValue": 250000 },
+    { "id": "a6", "name": "Agent 6", "focus": "Assistenz Zentral", "level": "Assistenz", "region": "Zentral", "winRate": 0.10, "pipelineValue": 150000 }
   ],
   "tenders": [
     {
@@ -162,7 +205,6 @@
       "region": "Leipzig/Halle",
       "trade": "Facility",
       "buyerId": "b1",
-      "zoneId": "z1",
       "ownerId": "a1",
       "priority": "A",
       "decision": "Go",
@@ -174,7 +216,10 @@
       "dueDate": "2026-05-10",
       "sourceType": "portal",
       "ingestedAt": "2026-04-08T22:40:00.000Z",
-      "distanceKm": 18
+      "distanceKm": 18,
+      "matchedSiteId": "site_torgau",
+      "prefilteredForBid": true,
+      "sourceKeywords": ["unterhaltsreinigung", "verwaltungsgebäude"]
     },
     {
       "id": "t2",
@@ -182,7 +227,6 @@
       "region": "Magdeburg/Salzlandkreis",
       "trade": "Sicherheit",
       "buyerId": "b2",
-      "zoneId": "z2",
       "ownerId": "a2",
       "priority": "A",
       "decision": "Prüfen",
@@ -194,7 +238,10 @@
       "dueDate": "2026-04-20",
       "sourceType": "portal",
       "ingestedAt": "2026-04-08T22:41:00.000Z",
-      "distanceKm": 22
+      "distanceKm": 22,
+      "matchedSiteId": "site_zeitz",
+      "prefilteredForBid": true,
+      "sourceKeywords": ["objektschutz", "sicherheitsdienst"]
     },
     {
       "id": "t3",
@@ -202,7 +249,6 @@
       "region": "Berlin selektiv",
       "trade": "Reinigung",
       "buyerId": "b3",
-      "zoneId": "z4",
       "ownerId": "a4",
       "priority": "C",
       "decision": "No-Go",
@@ -214,7 +260,10 @@
       "dueDate": "2026-04-18",
       "sourceType": "portal",
       "ingestedAt": "2026-04-08T22:42:00.000Z",
-      "distanceKm": 14
+      "distanceKm": 14,
+      "matchedSiteId": "site_berlin",
+      "prefilteredForBid": false,
+      "sourceKeywords": ["schulreinigung"]
     },
     {
       "id": "t4",
@@ -222,7 +271,6 @@
       "region": "Gera/Altenburg",
       "trade": "Hausmeister",
       "buyerId": "b4",
-      "zoneId": "z3",
       "ownerId": "a3",
       "priority": "B",
       "decision": "Go",
@@ -234,7 +282,10 @@
       "dueDate": "2026-04-25",
       "sourceType": "portal",
       "ingestedAt": "2026-04-08T22:43:00.000Z",
-      "distanceKm": 17
+      "distanceKm": 17,
+      "matchedSiteId": "site_zeitz",
+      "prefilteredForBid": true,
+      "sourceKeywords": ["hausmeister", "objektbetreuung"]
     }
   ],
   "pipeline": [
