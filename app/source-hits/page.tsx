@@ -70,6 +70,8 @@ export default async function SourceHitsPage({ searchParams }: Props) {
                 <th>Volumen</th>
                 <th>Laufzeit</th>
                 <th>AI</th>
+                <th>Qualität</th>
+                <th>Link</th>
               </tr>
             </thead>
             <tbody>
@@ -82,6 +84,8 @@ export default async function SourceHitsPage({ searchParams }: Props) {
                   <td>{formatCurrencyCompact(row.estimatedValue)}</td>
                   <td>{row.durationMonths ? `${row.durationMonths} Mon.` : "-"}</td>
                   <td>{row.aiRecommendation || row.status || "-"}</td>
+                  <td>{row.sourceQuality || "-"}</td>
+                  <td>{row.linkStatus || "-"}</td>
                 </tr>
               ))}
             </tbody>

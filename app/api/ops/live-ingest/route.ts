@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readStore, replaceCollection } from "@/lib/storage";
+import { enrichSourceHitsForValidityAndEstimation } from "@/lib/aiEnrichment";
 
 function wantsRedirect(req: Request) {
   const url = new URL(req.url);
@@ -29,6 +30,7 @@ export async function GET(req: Request) {
     };
 
     await replaceCollection("meta", meta);
+    await enrichSourceHitsForValidityAndEstimation();
 
     if (wantsRedirect(req)) {
       return NextResponse.redirect(new URL("/", req.url));

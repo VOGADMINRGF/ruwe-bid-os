@@ -17,6 +17,8 @@ export type StoreCollection =
   | "agents"
   | "agentKeywords"
   | "globalKeywords"
+  | "costModels"
+  | "costGaps"
   | "tenders"
   | "pipeline"
   | "references"
@@ -36,6 +38,13 @@ export type StoreShape = {
   agents: any[];
   agentKeywords: any[];
   globalKeywords: {
+    positive: string[];
+    negative: string[];
+    [key: string]: any;
+  };
+  costModels: any[];
+  costGaps: any[];
+  
     positive: string[];
     negative: string[];
     [key: string]: any;
@@ -61,6 +70,8 @@ const EMPTY_STORE: StoreShape = {
   agents: [],
   agentKeywords: [],
   globalKeywords: { positive: [], negative: [] },
+  costModels: [],
+  costGaps: [],
   tenders: [],
   pipeline: [],
   references: [],
@@ -81,6 +92,8 @@ function normalizeStore(db: any): StoreShape {
     buyers: Array.isArray(db?.buyers) ? db.buyers : [],
     agents: Array.isArray(db?.agents) ? db.agents : [],
     agentKeywords: Array.isArray(db?.agentKeywords) ? db.agentKeywords : [],
+    costModels: Array.isArray(db?.costModels) ? db.costModels : [],
+    costGaps: Array.isArray(db?.costGaps) ? db.costGaps : [],
     globalKeywords:
       db?.globalKeywords && typeof db.globalKeywords === "object" && !Array.isArray(db.globalKeywords)
         ? {
@@ -127,7 +140,7 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
@@ -244,7 +257,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 export async function writeDb(next: StoreShape) {
   const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
   for (const name of names) {
