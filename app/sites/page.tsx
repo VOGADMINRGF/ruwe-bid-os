@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { readStore } from "@/lib/storage";
 
-export default async function Betriebshöfe & NiederlassungenPage() {
+export default async function SitesPage() {
   const db = await readStore();
   const sites = db.sites || [];
   const rules = db.siteTradeRules || [];
