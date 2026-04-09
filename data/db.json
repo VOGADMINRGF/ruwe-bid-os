@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "appName": "RUWE Bid OS",
+    "version": "phase5-master",
+    "lastSeededAt": "2026-04-08T22:30:00.000Z",
+    "pollingSeconds": 60
+  },
+  "config": {
+    "assessmentRules": {
+      "good": {
+        "minStrongShare": 0.4,
+        "maxOverdue": 0,
+        "minGoShare": 0.25
+      },
+      "critical": {
+        "maxGoShare": 0.15,
+        "minOverdue": 2
+      }
+    },
+    "tradeMatrix": {
+      "Facility": { "radiusPrimaryKm": 45, "radiusSecondaryKm": 70, "baseWeight": 1.0 },
+      "Sicherheit": { "radiusPrimaryKm": 35, "radiusSecondaryKm": 60, "baseWeight": 1.1 },
+      "Reinigung": { "radiusPrimaryKm": 40, "radiusSecondaryKm": 65, "baseWeight": 0.95 },
+      "Hausmeister": { "radiusPrimaryKm": 30, "radiusSecondaryKm": 50, "baseWeight": 0.9 },
+      "Grünpflege": { "radiusPrimaryKm": 30, "radiusSecondaryKm": 45, "baseWeight": 0.7 },
+      "Winterdienst": { "radiusPrimaryKm": 25, "radiusSecondaryKm": 40, "baseWeight": 0.65 }
+    },
+    "sources": [
+      { "id": "s1", "name": "TED Europa", "type": "rss", "url": "https://ted.europa.eu" },
+      { "id": "s2", "name": "Bund.de", "type": "portal", "url": "https://www.service.bund.de" },
+      { "id": "s3", "name": "DTVP", "type": "portal", "url": "https://www.dtvp.de" }
+    ],
+    "roles": [
+      { "key": "management", "label": "Management" },
+      { "key": "coordinator", "label": "Koordinator" },
+      { "key": "assistant", "label": "Assistenz" },
+      { "key": "analyst", "label": "Analyst" }
+    ]
+  },
+  "zones": [
+    {
+      "id": "z1",
+      "name": "Leipzig/Halle",
+      "homeBase": "Leipzig",
+      "state": "Sachsen/Sachsen-Anhalt",
+      "primaryRadiusKm": 45,
+      "secondaryRadiusKm": 70,
+      "priorityTrades": ["Facility", "Sicherheit"],
+      "supportedTrades": ["Reinigung", "Hausmeister"],
+      "notes": "Ausbauzone Ost mit Fokus auf Facility und Sicherheit."
+    },
+    {
+      "id": "z2",
+      "name": "Magdeburg/Salzlandkreis",
+      "homeBase": "Magdeburg",
+      "state": "Sachsen-Anhalt",
+      "primaryRadiusKm": 40,
+      "secondaryRadiusKm": 60,
+      "priorityTrades": ["Sicherheit", "Reinigung"],
+      "supportedTrades": ["Facility"],
+      "notes": "Starker Fit für sicherheitsnahe Lose."
+    },
+    {
+      "id": "z3",
+      "name": "Gera/Altenburg",
+      "homeBase": "Gera",
+      "state": "Thüringen",
+      "primaryRadiusKm": 35,
+      "secondaryRadiusKm": 55,
+      "priorityTrades": ["Hausmeister", "Facility"],
+      "supportedTrades": ["Reinigung"],
+      "notes": "Geeignet für wiederkehrende kommunale Lose."
+    },
+    {
+      "id": "z4",
+      "name": "Berlin selektiv",
+      "homeBase": "Berlin",
+      "state": "Berlin",
+      "primaryRadiusKm": 25,
+      "secondaryRadiusKm": 35,
+      "priorityTrades": ["Sicherheit"],
+      "supportedTrades": ["Facility"],
+      "notes": "Preisgetrieben, nur selektiv spielen."
+    }
+  ],
+  "buyers": [
+    { "id": "b1", "name": "Stadt Leipzig", "type": "kommunal", "strategic": true },
+    { "id": "b2", "name": "Jobcenter Salzlandkreis", "type": "öffentlich", "strategic": true },
+    { "id": "b3", "name": "Bezirksamt Berlin", "type": "kommunal", "strategic": false },
+    { "id": "b4", "name": "Landratsamt Altenburg", "type": "öffentlich", "strategic": true }
+  ],
+  "agents": [
+    { "id": "a1", "name": "Agent 1", "focus": "Facility Ost", "level": "Koordinator", "region": "Leipzig/Halle", "winRate": 0.41, "pipelineValue": 4200000 },
+    { "id": "a2", "name": "Agent 2", "focus": "Sicherheit", "level": "Koordinator", "region": "Magdeburg/Salzlandkreis", "winRate": 0.37, "pipelineValue": 3100000 },
+    { "id": "a3", "name": "Agent 3", "focus": "Kommunal", "level": "Spezialist", "region": "Gera/Altenburg", "winRate": 0.29, "pipelineValue": 1800000 },
+    { "id": "a4", "name": "Agent 4", "focus": "Berlin selektiv", "level": "Spezialist", "region": "Berlin selektiv", "winRate": 0.18, "pipelineValue": 950000 },
+    { "id": "a5", "name": "Agent 5", "focus": "Assistenz Ost", "level": "Assistenz", "region": "Leipzig/Halle", "winRate": 0.12, "pipelineValue": 250000 },
+    { "id": "a6", "name": "Agent 6", "focus": "Assistenz Zentral", "level": "Assistenz", "region": "Magdeburg/Salzlandkreis", "winRate": 0.10, "pipelineValue": 150000 }
+  ],
+  "tenders": [
+    {
+      "id": "t1",
+      "title": "Verwaltungsreinigung Leipzig",
+      "region": "Leipzig/Halle",
+      "trade": "Facility",
+      "buyerId": "b1",
+      "zoneId": "z1",
+      "ownerId": "a1",
+      "priority": "A",
+      "decision": "Go",
+      "status": "go",
+      "manualReview": "nein",
+      "fitSummary": "stark",
+      "riskLevel": "niedrig",
+      "estimatedValue": 1800000,
+      "dueDate": "2026-05-10",
+      "sourceType": "portal",
+      "notes": "Starker strategischer Fit in Zielzone."
+    },
+    {
+      "id": "t2",
+      "title": "Sicherheitsdienst Salzlandkreis",
+      "region": "Magdeburg/Salzlandkreis",
+      "trade": "Sicherheit",
+      "buyerId": "b2",
+      "zoneId": "z2",
+      "ownerId": "a2",
+      "priority": "A",
+      "decision": "Prüfen",
+      "status": "manuelle_pruefung",
+      "manualReview": "zwingend",
+      "fitSummary": "stark",
+      "riskLevel": "mittel",
+      "estimatedValue": 2400000,
+      "dueDate": "2026-04-20",
+      "sourceType": "portal",
+      "notes": "Gutes Volumen, manuelle Prüfung wegen Leistungsumfang."
+    },
+    {
+      "id": "t3",
+      "title": "Schulreinigung Berlin",
+      "region": "Berlin selektiv",
+      "trade": "Reinigung",
+      "buyerId": "b3",
+      "zoneId": "z4",
+      "ownerId": "a4",
+      "priority": "C",
+      "decision": "No-Go",
+      "status": "no_go",
+      "manualReview": "nein",
+      "fitSummary": "schwach",
+      "riskLevel": "hoch",
+      "estimatedValue": 900000,
+      "dueDate": "2026-04-18",
+      "sourceType": "portal",
+      "notes": "Preislich unattraktiv."
+    },
+    {
+      "id": "t4",
+      "title": "Hausmeisterdienst Gera",
+      "region": "Gera/Altenburg",
+      "trade": "Hausmeister",
+      "buyerId": "b4",
+      "zoneId": "z3",
+      "ownerId": "a3",
+      "priority": "B",
+      "decision": "Go",
+      "status": "go",
+      "manualReview": "optional",
+      "fitSummary": "mittel",
+      "riskLevel": "niedrig",
+      "estimatedValue": 650000,
+      "dueDate": "2026-04-25",
+      "sourceType": "portal",
+      "notes": "Guter Fit, aber geringeres Volumen."
+    }
+  ],
+  "pipeline": [
+    { "id": "p1", "title": "Verwaltungsreinigung Leipzig", "stage": "Angebot", "value": 1800000, "tenderId": "t1" },
+    { "id": "p2", "title": "Sicherheitsdienst Salzlandkreis", "stage": "Prüfung", "value": 2400000, "tenderId": "t2" },
+    { "id": "p3", "title": "Hausmeisterdienst Gera", "stage": "Angebot", "value": 650000, "tenderId": "t4" }
+  ],
+  "references": [
+    {
+      "id": "r1",
+      "title": "Kommunale Verwaltungsreinigung",
+      "description": "Referenz für wiederkehrende Facility-Leistungen im öffentlichen Bereich.",
+      "trade": "Facility",
+      "region": "Ost",
+      "value": 1500000
+    },
+    {
+      "id": "r2",
+      "title": "Sicherheitsdienst öffentlicher Auftraggeber",
+      "description": "Referenz für sicherheitsnahe Leistungen mit hohen Anforderungen.",
+      "trade": "Sicherheit",
+      "region": "Sachsen-Anhalt",
+      "value": 2300000
+    }
+  ],
+  "ingestion": {
+    "sources": [
+      { "id": "i1", "name": "TED Europa", "type": "rss", "status": "ready" },
+      { "id": "i2", "name": "Bund.de", "type": "portal", "status": "planned" },
+      { "id": "i3", "name": "DTVP", "type": "portal", "status": "planned" }
+    ],
+    "jobs": [],
+    "lastRunAt": null
+  }
+}

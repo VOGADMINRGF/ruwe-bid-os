@@ -1,8 +1,17 @@
-export default function Page() {
+import { readDb } from "@/lib/db";
+
+export default async function ConfigPage() {
+  const db = await readDb();
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">uconfig</h1>
-      <p>Dieses Modul ist vollständig vorbereitet und bereit für Erweiterungen.</p>
+    <div className="stack">
+      <div>
+        <h1 className="h1">Config</h1>
+        <p className="sub">Systemregeln, Bewertungslogik, Quellen und Rollenmodell.</p>
+      </div>
+      <div className="card">
+        <pre className="doc">{JSON.stringify(db.config, null, 2)}</pre>
+      </div>
     </div>
   );
 }

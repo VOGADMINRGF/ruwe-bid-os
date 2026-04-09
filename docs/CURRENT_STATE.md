@@ -1,4 +1,18 @@
-# Current State
+# CURRENT_STATE
 
-Minimal lauffähige Next.js-Basis ist vorhanden.
-Nächster Stand: RUWE CI Dashboard + Navigationsstruktur + Seed-Daten + erste Steuerlogik.
+## Stand
+Stabiles Next.js-System ohne Prisma-/Tailwind-Abhängigkeit als lokale Arbeitsbasis.
+
+## Bereits enthalten
+- Dashboard mit Management-KPIs
+- Klickbare Module inkl. Detailseiten
+- JSON-Datenbasis mit API-Routen
+- Score-, KPI- und Assessment-Logik
+- Ingestion- und Rollen-Scaffold
+- Docs für Phasen, Roadmap und Aufgaben
+
+## Noch offen
+- Externe Feed- und Portal-Adapter
+- Auth & Rollen enforcement
+- Hintergrundjobs / Scheduler
+- Exporte / Reporting

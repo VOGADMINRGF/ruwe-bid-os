@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { createId, readDb, writeDb } from "@/lib/db";
 
 export async function GET() {
-  const data = await prisma.tender.findMany();
-  return NextResponse.json(data);
+  const db = await readDb();
+  return NextResponse.json(db.tenders || []);
 }
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const data = await prisma.tender.create({ data: body });
-  return NextResponse.json(data);
+  const db = await readDb();
+  const item = {
+    id: createId("t"),
+    ...body
+  };
+  db.tenders.unshift(item);
+  await writeDb(db);
+  return NextResponse.json(item);
 }
