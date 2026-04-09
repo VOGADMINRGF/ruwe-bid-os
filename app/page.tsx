@@ -3,20 +3,17 @@ import { readStore } from "@/lib/storage";
 import { formatDateTime, modeLabel, modeBadgeClass } from "@/lib/format";
 import { aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
 import { topDeadlineStats, topForecastCards, sourcePerformanceRows, pipelineStageSummary } from "@/lib/dashboardLogic";
-import { portfolioSummary, highAttentionCases, missingCoverageCases, longRunningCases, highestVolumeCases, managementNarrative } from "@/lib/managementMetrics";
+import { portfolioSummary, highAttentionCases, missingCoverageCases, longRunningCases, managementNarrative } from "@/lib/managementMetrics";
+import { formatCurrencyCompact } from "@/lib/numberFormat";
 
-function DecisionCard({ href, label, value, sub }: { href: string; label: string; value: string | number; sub: string }) {
+function DecisionCard({ href, label, value, sub }: { href: string; label: string; value: string; sub: string }) {
   return (
     <Link href={href} className="card">
       <div className="label">{label}</div>
-      <div className="kpi">{value}</div>
-      <div className="meta" style={{ marginTop: 10 }}>{sub}</div>
+      <div className="kpi-compact">{value}</div>
+      <div className="metric-sub">{sub}</div>
     </Link>
   );
-}
-
-function euroK(v: number) {
-  return `${Math.round((v || 0) / 1000)}k €`;
 }
 
 export default async function DashboardPage() {
@@ -32,14 +29,13 @@ export default async function DashboardPage() {
   const narrative = managementNarrative(db);
   const highAttention = highAttentionCases(db);
   const longRun = longRunningCases(db);
-  const highVolume = highestVolumeCases(db);
   const gaps = missingCoverageCases(db);
-  const mode = meta.dataMode || "test";
+  const mode = meta.dataMode || "live";
 
   return (
     <div className="stack">
       <section className="stack" style={{ gap: 8 }}>
-        <h1 className="h1">Ausschreibungen gezielt steuern.</h1>
+        <h1 className="h1"><span className="headline-accent">Ausschreibungen</span> gezielt steuern.</h1>
         <p className="sub">
           Steuerzentrale für Ausschreibungen nach Region, Geschäftsfeld, Radius, Quelle und Frist.
         </p>
@@ -54,9 +50,8 @@ export default async function DashboardPage() {
             </div>
             <div className="meta">Letzter Abruf: {formatDateTime(meta.lastSuccessfulIngestionAt)}</div>
             <div className="meta">Letzte Quelle: {meta.lastSuccessfulIngestionSource || "-"}</div>
-            <div className="meta">{meta.dataValidityNote || "-"}</div>
 
-            <div className="row" style={{ marginTop: 8 }}>
+            <div className="toolbar" style={{ marginTop: 8 }}>
               <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
               <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
               <Link className="button-secondary" href="/dashboard/forecast">Forecast</Link>
@@ -75,19 +70,19 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid grid-6">
-        <DecisionCard href="/source-hits" label="Ausschreibungsvolumen" value={euroK(portfolio.totalVolume)} sub={`${portfolio.totalCount} Treffer gesamt`} />
-        <DecisionCard href="/source-hits?status=prefiltered" label="Empfohlen" value={euroK(portfolio.bidVolume)} sub={`${portfolio.bidCount} Bid-Kandidaten`} />
-        <DecisionCard href="/source-hits?status=manual_review" label="Manuell prüfen" value={euroK(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
-        <DecisionCard href="/source-hits" label="No-Bid / Beobachten" value={euroK(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} derzeit nicht priorisiert`} />
-        <DecisionCard href="/dashboard/deadlines" label="Fristen 7 Tage" value={deadlines.due7} sub="Sofort handeln" />
-        <DecisionCard href="/sites" label="Standorte / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="Aktive Abdeckung" />
+        <DecisionCard href="/source-hits" label="Ausschreibungsvolumen" value={formatCurrencyCompact(portfolio.totalVolume)} sub={`${portfolio.totalCount} Treffer`} />
+        <DecisionCard href="/source-hits?decision=Bid" label="Empfohlen" value={formatCurrencyCompact(portfolio.bidVolume)} sub={`${portfolio.bidCount} Kandidaten`} />
+        <DecisionCard href="/source-hits?decision=Prüfen" label="Manuell prüfen" value={formatCurrencyCompact(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
+        <DecisionCard href="/source-hits?decision=No-Go" label="No-Bid / Beobachten" value={formatCurrencyCompact(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} derzeit nicht priorisiert`} />
+        <DecisionCard href="/pipeline?window=7d" label="Fristen 7 Tage" value={`${deadlines.due7}`} sub="sofort handeln" />
+        <DecisionCard href="/sites" label="Standorte / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="aktive Abdeckung" />
       </section>
 
       <section className="grid grid-2">
         <div className="card">
           <div className="section-title">Wo lohnt Fokus?</div>
           <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Geschäftsfelder und Regionen mit dem stärksten aktuellen Marktbild.
+            Geschäftsfelder und Regionen mit attraktivem Marktbild.
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -107,7 +102,7 @@ export default async function DashboardPage() {
                     <td>{row.trade}</td>
                     <td>{row.region}</td>
                     <td>{row.count}</td>
-                    <td>{euroK(row.volume)}</td>
+                    <td>{formatCurrencyCompact(row.volume)}</td>
                     <td>{row.bids}</td>
                     <td>{row.reviews}</td>
                   </tr>
@@ -152,14 +147,14 @@ export default async function DashboardPage() {
       <section className="card">
         <div className="section-title">Pipeline-Steuerung</div>
         <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-          Stages, Volumen und Bearbeitungsdruck im Überblick.
+          Stages und Volumen im Überblick.
         </div>
         <div className="stage-board">
           {stages.map((stage: any) => (
             <div key={stage.stage} className="stage-card">
               <div className="label">{stage.stage}</div>
               <div className="stage-count">{stage.count}</div>
-              <div className="stage-value">{euroK(stage.value)}</div>
+              <div className="stage-value">{formatCurrencyCompact(stage.value)}</div>
             </div>
           ))}
         </div>
@@ -169,7 +164,7 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Region × Geschäftsfeld × Volumen</div>
           <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Strukturbild der sichtbarsten Marktsegmente.
+            Sichtbare Marktsegmente mit aktuellem Volumenbild.
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -190,7 +185,7 @@ export default async function DashboardPage() {
                     <td>{row.trade}</td>
                     <td>{row.sources}</td>
                     <td>{row.count}</td>
-                    <td>{euroK(row.volume)}</td>
+                    <td>{formatCurrencyCompact(row.volume)}</td>
                     <td>{row.avgDurationMonths} Mon.</td>
                   </tr>
                 ))}
@@ -202,7 +197,7 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Jetzt handeln</div>
           <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Die drei wichtigsten unmittelbaren Arbeitsfelder.
+            Die wichtigsten unmittelbaren Arbeitsfelder.
           </div>
           <div className="stack">
             <div className="card soft">
@@ -239,9 +234,8 @@ export default async function DashboardPage() {
                 <tr>
                   <th>Titel</th>
                   <th>Region</th>
-                  <th>Gewerk</th>
+                  <th>Geschäftsfeld</th>
                   <th>Volumen</th>
-                  <th>Laufzeit</th>
                 </tr>
               </thead>
               <tbody>
@@ -250,8 +244,7 @@ export default async function DashboardPage() {
                     <td>{row.title}</td>
                     <td>{row.region || "-"}</td>
                     <td>{row.trade || "-"}</td>
-                    <td>{euroK(Number(row.estimatedValue || 0))}</td>
-                    <td>{row.durationMonths || "-"} Mon.</td>
+                    <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -262,7 +255,7 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Höchste Laufzeiten</div>
           <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Relevant für langfristige Ertrags- und Kapazitätsplanung.
+            Relevant für langfristige Kapazitätsplanung.
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -270,7 +263,7 @@ export default async function DashboardPage() {
                 <tr>
                   <th>Titel</th>
                   <th>Region</th>
-                  <th>Gewerk</th>
+                  <th>Geschäftsfeld</th>
                   <th>Laufzeit</th>
                 </tr>
               </thead>
@@ -291,7 +284,7 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Abdeckungslücken</div>
           <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Potenziell interessante Fälle, die derzeit nicht sauber aufgestellt sind.
+            Potenziell interessante Fälle ohne sauberen Fit.
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -308,7 +301,7 @@ export default async function DashboardPage() {
                   <tr key={row.id}>
                     <td>{row.title}</td>
                     <td>{row.region || "-"}</td>
-                    <td>{euroK(Number(row.estimatedValue || 0))}</td>
+                    <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
                     <td>{row.gapReason}</td>
                   </tr>
                 ))}

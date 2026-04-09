@@ -1,63 +1,85 @@
+import Link from "next/link";
 import { readStore } from "@/lib/storage";
+import { filterPipelineByWindow, pipelineStageBuckets } from "@/lib/pipelineFilters";
+import { formatCurrencyCompact } from "@/lib/numberFormat";
 
-function grouped(rows: any[]) {
-  const stages = ["Qualifiziert", "Review", "Freigabe intern", "Angebot", "Beobachtet", "Eingereicht", "Verhandlung", "Gewonnen", "Verloren"];
-  return stages.map((stage) => ({
-    stage,
-    items: rows.filter((x) => x.stage === stage)
-  })).filter((x) => x.items.length > 0);
+type Props = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function asString(v: string | string[] | undefined) {
+  return Array.isArray(v) ? v[0] : (v || "");
 }
 
-export default async function PipelinePage() {
+export default async function PipelinePage({ searchParams }: Props) {
+  const sp = (await searchParams) || {};
+  const windowKey = asString(sp.window) || "all";
+
   const db = await readStore();
-  const rows = db.pipeline || [];
-  const groups = grouped(rows);
+  const all = db.pipeline || [];
+  const rows = filterPipelineByWindow(all, windowKey);
+  const buckets = pipelineStageBuckets(all);
 
   return (
     <div className="stack">
       <div>
-        <h1 className="h1">Pipeline</h1>
-        <p className="sub">Operative Übersicht über Chancen, Stages, nächste Schritte und die Pflege bis Ende der Woche.</p>
+        <h1 className="h1"><span className="headline-accent">Pipeline</span> & Fristen</h1>
+        <p className="sub">Steuerung nach Stage, Frist und Status inklusive Verloren / No-Bid.</p>
       </div>
 
-      <div className="grid grid-4">
-        <div className="card"><div className="label">Chancen</div><div className="kpi">{rows.length}</div></div>
-        <div className="card"><div className="label">A-Priorität</div><div className="kpi">{rows.filter((x: any) => x.priority === "A").length}</div></div>
-        <div className="card"><div className="label">Im Review</div><div className="kpi">{rows.filter((x: any) => x.stage === "Review").length}</div></div>
-        <div className="card"><div className="label">Wert gesamt</div><div className="kpi">{Math.round(rows.reduce((sum: number, x: any) => sum + (x.value || 0), 0) / 1000)}k €</div></div>
-      </div>
+      <div className="card">
+        <form className="table-toolbar" method="GET">
+          <select className="select" name="window" defaultValue={windowKey}>
+            <option value="all">Alle Zeiträume</option>
+            <option value="7d">Fristen bis 7 Tage</option>
+            <option value="14d">Fristen bis 14 Tage</option>
+            <option value="30d">Fristen bis 30 Tage</option>
+            <option value="overdue">Überfällig</option>
+            <option value="lost">Verloren / No-Bid</option>
+          </select>
+          <button className="button" type="submit">Anzeigen</button>
+          <Link className="button-secondary" href="/pipeline">Reset</Link>
+        </form>
 
-      {groups.map((group) => (
-        <div className="card" key={group.stage}>
-          <div className="section-title">{group.stage}</div>
-          <div className="table-wrap" style={{ marginTop: 12 }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Titel</th>
-                  <th>Priorität</th>
-                  <th>Wert</th>
-                  <th>Nächster Schritt</th>
-                  <th>EOW</th>
-                  <th>AI Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.items.map((item: any) => (
-                  <tr key={item.id}>
-                    <td>{item.title}</td>
-                    <td>{item.priority || "-"}</td>
-                    <td>{Math.round((item.value || 0) / 1000)}k €</td>
-                    <td>{item.nextStep || "-"}</td>
-                    <td>{item.eowUpdate || "-"}</td>
-                    <td>{item.aiScore || "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="stage-board" style={{ marginBottom: 18 }}>
+          {buckets.map((b: any) => (
+            <div className="stage-card" key={b.stage}>
+              <div className="label">{b.stage}</div>
+              <div className="stage-count">{b.count}</div>
+              <div className="stage-value">{formatCurrencyCompact(b.value)}</div>
+            </div>
+          ))}
         </div>
-      ))}
+
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Stage</th>
+                <th>Volumen</th>
+                <th>Frist</th>
+                <th>Tage</th>
+                <th>Nächster Schritt</th>
+                <th>EOW</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row: any) => (
+                <tr key={row.id}>
+                  <td>{row.title}</td>
+                  <td>{row.stage || "-"}</td>
+                  <td>{formatCurrencyCompact(row.value)}</td>
+                  <td>{row.dueDate || "-"}</td>
+                  <td>{row.daysLeft ?? "-"}</td>
+                  <td>{row.nextStep || "-"}</td>
+                  <td>{row.eowUpdate || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

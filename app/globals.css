@@ -213,3 +213,46 @@ a{color:inherit;text-decoration:none}
   .kpi{font-size:42px}
   .topbar-inner{padding:16px 10px}
 }
+
+
+.headline-accent{
+  color: var(--brand);
+}
+
+.kpi-compact{
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 850;
+  margin-top: 8px;
+}
+
+.metric-sub{
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.input, .select{
+  min-height:42px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:0 12px;
+  background:#fff;
+  color:var(--text);
+  font-size:15px;
+}
+
+.table-toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:14px;
+}
