@@ -29,26 +29,7 @@ for (const b of json.buyers || []) graphNodes.push({ type: "buyer", refId: b.id,
 for (const a of json.agents || []) graphNodes.push({ type: "agent", refId: a.id, label: a.name });
 for (const r of json.references || []) graphNodes.push({ type: "reference", refId: r.id, label: r.title });
 
-for (const area of json.serviceAreas || []) {
-  graphEdges.push({
-    type: "SERVICE_AREA_OF",
-    fromType: "service_area",
-    fromRefId: area.id,
-    toType: "site",
-    toRefId: area.siteId
-  });
-}
-
 for (const tender of json.tenders || []) {
-  if (tender.matchedSiteId) {
-    graphEdges.push({
-      type: "MATCHED_SITE",
-      fromType: "tender",
-      fromRefId: tender.id,
-      toType: "site",
-      toRefId: tender.matchedSiteId
-    });
-  }
   if (tender.buyerId) {
     graphEdges.push({
       type: "HAS_BUYER",
@@ -68,6 +49,17 @@ for (const tender of json.tenders || []) {
     });
   }
 }
+for (const hit of json.sourceHits || []) {
+  if (hit.matchedSiteId) {
+    graphEdges.push({
+      type: "MATCHED_SITE",
+      fromType: "tender",
+      fromRefId: hit.id,
+      toType: "site",
+      toRefId: hit.matchedSiteId
+    });
+  }
+}
 
 const client = new MongoClient(mongoUri);
 await client.connect();
@@ -76,7 +68,9 @@ const db = client.db(dbName);
 const docs = {
   meta: [json.meta || {}],
   config: [json.config || {}],
+  sourceRegistry: json.sourceRegistry || [],
   sourceStats: json.sourceStats || [],
+  sourceHits: json.sourceHits || [],
   sites: json.sites || [],
   serviceAreas: json.serviceAreas || [],
   siteTradeRules: json.siteTradeRules || [],
@@ -99,10 +93,14 @@ await client.close();
 
 console.log("Migration erfolgreich:");
 console.log({
+  sourceRegistry: docs.sourceRegistry.length,
+  sourceStats: docs.sourceStats.length,
+  sourceHits: docs.sourceHits.length,
   sites: docs.sites.length,
-  serviceAreas: docs.serviceAreas.length,
   siteTradeRules: docs.siteTradeRules.length,
   tenders: docs.tenders.length,
+  agents: docs.agents.length,
+  pipeline: docs.pipeline.length,
   graphNodes: docs.graphNodes.length,
   graphEdges: docs.graphEdges.length
 });
