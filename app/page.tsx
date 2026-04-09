@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { readStore } from "@/lib/storage";
-import { sourceUsefulnessScore, aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
-import { formatDateTime, dataModeBadgeClass, dataModeLabel } from "@/lib/format";
+import { sourceUsefulnessScore, aggregateHitsByRegionAndTrade, aggregateSourceRegionTradePotential } from "@/lib/sourceLogic";
+import { formatDateTime, modeBadgeClass, modeLabel } from "@/lib/format";
 
 function KpiCard({ href, label, value, sub }: { href: string; label: string; value: string | number; sub?: string }) {
   return (
@@ -26,6 +26,7 @@ export default async function DashboardPage() {
   const prefiltered = hits.filter((x: any) => x.status === "prefiltered");
   const manual = hits.filter((x: any) => x.status === "manual_review");
   const grouped = aggregateHitsByRegionAndTrade(hits);
+  const potential = aggregateSourceRegionTradePotential(db);
 
   const rows = registry.map((src: any) => {
     const stat = stats.find((s: any) => s.id === src.id) || {};
@@ -33,7 +34,7 @@ export default async function DashboardPage() {
   }).sort((a: any, b: any) => b.usefulnessScore - a.usefulnessScore);
 
   const bestSource = rows[0];
-  const mode = meta.dataMode || "demo";
+  const mode = meta.dataMode || "test";
 
   return (
     <div className="stack">
@@ -49,14 +50,14 @@ export default async function DashboardPage() {
           <div className="stack" style={{ gap: 6 }}>
             <div className="row" style={{ gap: 10, alignItems: "center" }}>
               <div className="label">Monitoring Schnellblick</div>
-              <span className={dataModeBadgeClass(mode)}>{dataModeLabel(mode)}</span>
+              <span className={modeBadgeClass(mode)}>Datenstand: {modeLabel(mode)}</span>
             </div>
             <div className="meta">Letzter Abruf: {formatDateTime(meta.lastSuccessfulIngestionAt)}</div>
             <div className="meta">Letzte Quelle: {meta.lastSuccessfulIngestionSource || "-"}</div>
-            <div className="meta">Datenlage: {meta.dataValidityNote || "-"}</div>
+            <div className="meta">{meta.dataValidityNote || "-"}</div>
           </div>
           <div className="row">
-            <Link className="button" href="/dashboard/live">Live Abruf</Link>
+            <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
             <Link className="button-secondary" href="/dashboard/smoke">Smoke</Link>
             <Link className="button-secondary" href="/dashboard/ai-smoke">AI Test</Link>
             <Link className="button-secondary" href="/dashboard/source-tests">Tests</Link>
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid grid-6">
-        <KpiCard href="/dashboard/new-hits" label="Neu seit letztem Abruf" value={newHits.length} sub={`${dataModeLabel(mode)}-Treffer`} />
+        <KpiCard href="/source-hits" label="Neu seit letztem Abruf" value={newHits.length} sub="Neue Treffer" />
         <KpiCard href="/source-hits" label="Gesamt Treffer" value={hits.length} sub="Öffnet alle Treffer" />
         <KpiCard href="/source-hits?status=prefiltered" label="Vorausgewählt" value={prefiltered.length} sub="Bid-Kandidaten" />
         <KpiCard href="/source-hits?status=manual_review" label="Manuell prüfen" value={manual.length} sub="Offene Entscheidungen" />
@@ -78,18 +79,18 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Quellen & Nutzen</div>
           <div className="meta" style={{ marginBottom: 12 }}>
-            Aktuell sichtbare Werte stammen aus <strong>{dataModeLabel(mode)}</strong>-Daten, bis Live-Connectoren aktiv sind.
+            Zeigt den operativen Nutzen pro Quelle für die aktuellen Gewerke und Regionen.
           </div>
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
                   <th>Quelle</th>
-                  <th>Modus</th>
+                  <th>Datenstand</th>
                   <th>Letzter Abruf</th>
                   <th>Letzter Monat</th>
-                  <th>Seit letztem Abruf</th>
-                  <th>Vor</th>
+                  <th>Seit Abruf</th>
+                  <th>Vorausgewählt</th>
                   <th>Go</th>
                   <th>Score</th>
                 </tr>
@@ -98,7 +99,7 @@ export default async function DashboardPage() {
                 {rows.map((row: any) => (
                   <tr key={row.id}>
                     <td>{row.name}</td>
-                    <td>{dataModeLabel(row.dataMode || mode)}</td>
+                    <td>{modeLabel(row.dataMode || mode)}</td>
                     <td>{formatDateTime(row.lastFetchAt)}</td>
                     <td>{row.tendersLast30Days || 0}</td>
                     <td>{row.tendersSinceLastFetch || 0}</td>
@@ -115,7 +116,7 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="section-title">Region × Gewerk × Volumen</div>
           <div className="meta" style={{ marginBottom: 12 }}>
-            Dient aktuell als strukturierter Überblick und noch nicht als finaler Live-Forecast.
+            Welche Regionen und Gewerke aktuell über Quellen sichtbar und grundsätzlich attraktiv erscheinen.
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -123,6 +124,7 @@ export default async function DashboardPage() {
                 <tr>
                   <th>Region</th>
                   <th>Gewerk</th>
+                  <th>Quellen</th>
                   <th>Anzahl</th>
                   <th>Volumen</th>
                   <th>Laufzeit Ø</th>
@@ -133,6 +135,7 @@ export default async function DashboardPage() {
                   <tr key={`${row.region}_${row.trade}`}>
                     <td>{row.region}</td>
                     <td>{row.trade}</td>
+                    <td>{row.sources}</td>
                     <td>{row.count}</td>
                     <td>{Math.round(row.volume / 1000)}k €</td>
                     <td>{row.avgDurationMonths} Mon.</td>
@@ -141,6 +144,43 @@ export default async function DashboardPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="section-title">Regionenpotenzial je Gewerk</div>
+        <div className="meta" style={{ marginBottom: 12 }}>
+          Zeigt, was in den jeweiligen Regionen gemessen an Quellen, Gewerken und nächster Radiusklasse zusätzlich prüfenswert wäre.
+        </div>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Gewerk</th>
+                <th>Quellen</th>
+                <th>Treffer</th>
+                <th>Bid</th>
+                <th>Prüfen</th>
+                <th>Nächste Radiusklasse</th>
+                <th>Aktive Standorte</th>
+              </tr>
+            </thead>
+            <tbody>
+              {potential.map((row: any) => (
+                <tr key={`${row.region}_${row.trade}`}>
+                  <td>{row.region}</td>
+                  <td>{row.trade}</td>
+                  <td>{row.sources}</td>
+                  <td>{row.total}</td>
+                  <td>{row.bid}</td>
+                  <td>{row.review}</td>
+                  <td>{row.nearNextRadius}</td>
+                  <td>{row.activeSites}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

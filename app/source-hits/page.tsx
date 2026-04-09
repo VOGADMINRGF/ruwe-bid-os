@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { readStore } from "@/lib/storage";
 
+function label(sourceId: string) {
+  return sourceId
+    .replace("src_", "")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 export default async function SourceHitsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const params = await searchParams;
   const db = await readStore();
@@ -12,7 +19,7 @@ export default async function SourceHitsPage({ searchParams }: { searchParams: P
     <div className="stack">
       <div>
         <h1 className="h1">Source Hits</h1>
-        <p className="sub">Alle aktuell verfügbaren Treffer mit Quelle, Match, Distanz und Einordnung.</p>
+        <p className="sub">Alle aktuellen Treffer mit Quelle, Standortpassung, Distanz und operativer Einordnung.</p>
       </div>
 
       <div className="card table-wrap">
@@ -21,7 +28,7 @@ export default async function SourceHitsPage({ searchParams }: { searchParams: P
             <tr>
               <th>Titel</th>
               <th>Quelle</th>
-              <th>Standort</th>
+              <th>Standortmatch</th>
               <th>Region</th>
               <th>PLZ</th>
               <th>Gewerk</th>
@@ -35,15 +42,15 @@ export default async function SourceHitsPage({ searchParams }: { searchParams: P
             {hits.map((x: any) => (
               <tr key={x.id}>
                 <td><Link className="linkish" href={x.url} target="_blank">{x.title}</Link></td>
-                <td>{x.sourceId.replace("src_", "").replaceAll("_", " ")}</td>
+                <td>{label(x.sourceId || "")}</td>
                 <td>{x.matchedSiteId || "-"}</td>
-                <td>{x.region}</td>
+                <td>{x.region || "-"}</td>
                 <td>{x.postalCode || "-"}</td>
-                <td>{x.trade}</td>
-                <td>{x.distanceKm} km</td>
+                <td>{x.trade || "-"}</td>
+                <td>{x.distanceKm || "-"} km</td>
                 <td>{Math.round((x.estimatedValue || 0) / 1000)}k €</td>
-                <td>{x.durationMonths} Mon.</td>
-                <td>{x.status}</td>
+                <td>{x.durationMonths || "-"} Mon.</td>
+                <td>{x.status || "-"}</td>
               </tr>
             ))}
           </tbody>

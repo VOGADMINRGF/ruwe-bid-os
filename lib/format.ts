@@ -10,18 +10,14 @@ export function formatDateTime(value?: string | null) {
 
 export function modeLabel(mode?: string) {
   if (mode === "live") return "Live";
-  if (mode === "smoke") return "Smoke";
-  return "Demo";
+  return "Teststand";
 }
 
 export function modeBadgeClass(mode?: string) {
   if (mode === "live") return "badge badge-gut";
-  if (mode === "smoke") return "badge badge-gemischt";
-  return "badge badge-kritisch";
+  return "badge badge-gemischt";
 }
 
-/**
- * Rückwärtskompatible Exporte
- */
+/* rückwärtskompatibel */
 export const dataModeLabel = modeLabel;
 export const dataModeBadgeClass = modeBadgeClass;

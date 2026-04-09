@@ -4,17 +4,13 @@ import { aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const sourceId = searchParams.get("sourceId");
-  const onlyNew = searchParams.get("onlyNew") === "true";
-
+  const status = searchParams.get("status");
   const db = await readStore();
   let hits = db.sourceHits || [];
-
-  if (sourceId) hits = hits.filter((x: any) => x.sourceId === sourceId);
-  if (onlyNew) hits = hits.filter((x: any) => x.addedSinceLastFetch);
+  if (status) hits = hits.filter((x: any) => x.status === status);
 
   return NextResponse.json({
     hits,
-    summary: aggregateHitsByRegionAndTrade(hits)
+    grouped: aggregateHitsByRegionAndTrade(hits)
   });
 }
