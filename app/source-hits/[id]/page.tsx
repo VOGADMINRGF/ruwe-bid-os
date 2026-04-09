@@ -49,6 +49,7 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
             <form action={`/api/source-hits/${hit.id}/estimate`} method="POST">
               <button className="button-secondary" type="submit">Volumen neu schätzen</button>
             </form>
+            <form action={`/api/source-hits/${hit.id}/promote`} method="POST"><button className="button-secondary" type="submit">Als Opportunity anlegen</button></form>
             <Link className="button-secondary" href="/cost-models">Kostenmodelle</Link>
           </div>
         </div>

@@ -88,8 +88,8 @@ export default async function DashboardPage() {
 
       <section className="grid grid-6">
         <DecisionCard href="/source-hits" label="Ausschreibungsvolumen" value={formatCurrencyCompact(portfolio.totalVolume)} sub={`${portfolio.totalCount} Treffer`} />
-        <DecisionCard href="/source-hits?decision=Bid" label="Empfohlen" value={formatCurrencyCompact(portfolio.bidVolume)} sub={`${portfolio.bidCount} Kandidaten`} />
-        <DecisionCard href="/source-hits?decision=Prüfen" label="Manuell prüfen" value={formatCurrencyCompact(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
+        <DecisionCard href="/opportunities" label="Empfohlen" value={formatCurrencyCompact(portfolio.bidVolume)} sub={`${portfolio.bidCount} Kandidaten`} />
+        <DecisionCard href="/opportunities" label="Manuell prüfen" value={formatCurrencyCompact(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
         <DecisionCard href="/source-hits?decision=No-Go" label="No-Bid / Beobachten" value={formatCurrencyCompact(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} nicht priorisiert`} />
         <DecisionCard href="/pipeline?window=7d" label="Fristen 7 Tage" value={`${deadlines.due7}`} sub="sofort handeln" />
         <DecisionCard href="/sites" label="Standorte / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="aktive Abdeckung" />
@@ -223,7 +223,7 @@ export default async function DashboardPage() {
                 {deadlines.due7} Chancen laufen innerhalb von 7 Tagen ab.
               </div>
             </Link>
-            <Link href="/source-hits?decision=Prüfen" className="card soft">
+            <Link href="/opportunities" className="card soft">
               <div className="label">Reviews</div>
               <div className="meta" style={{ marginTop: 10 }}>
                 {portfolio.reviewCount} Treffer benötigen manuelle Entscheidung.

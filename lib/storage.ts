@@ -19,6 +19,8 @@ export type StoreCollection =
   | "globalKeywords"
   | "costModels"
   | "costGaps"
+  | "parameterMemory"
+  | "opportunities"
   | "tenders"
   | "pipeline"
   | "references"
@@ -44,11 +46,8 @@ export type StoreShape = {
   };
   costModels: any[];
   costGaps: any[];
-  
-    positive: string[];
-    negative: string[];
-    [key: string]: any;
-  };
+  parameterMemory: any[];
+  opportunities: any[];
   tenders: any[];
   pipeline: any[];
   references: any[];
@@ -72,6 +71,8 @@ const EMPTY_STORE: StoreShape = {
   globalKeywords: { positive: [], negative: [] },
   costModels: [],
   costGaps: [],
+  parameterMemory: [],
+  opportunities: [],
   tenders: [],
   pipeline: [],
   references: [],
@@ -94,6 +95,8 @@ function normalizeStore(db: any): StoreShape {
     agentKeywords: Array.isArray(db?.agentKeywords) ? db.agentKeywords : [],
     costModels: Array.isArray(db?.costModels) ? db.costModels : [],
     costGaps: Array.isArray(db?.costGaps) ? db.costGaps : [],
+    parameterMemory: Array.isArray(db?.parameterMemory) ? db.parameterMemory : [],
+    opportunities: Array.isArray(db?.opportunities) ? db.opportunities : [],
     globalKeywords:
       db?.globalKeywords && typeof db.globalKeywords === "object" && !Array.isArray(db.globalKeywords)
         ? {
@@ -140,7 +143,7 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","tenders",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
@@ -257,7 +260,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 export async function writeDb(next: StoreShape) {
   const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","tenders",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
   for (const name of names) {
