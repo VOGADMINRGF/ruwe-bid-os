@@ -19,3 +19,9 @@ export function modeBadgeClass(mode?: string) {
   if (mode === "smoke") return "badge badge-gemischt";
   return "badge badge-kritisch";
 }
+
+/**
+ * Rückwärtskompatible Exporte
+ */
+export const dataModeLabel = modeLabel;
+export const dataModeBadgeClass = modeBadgeClass;
