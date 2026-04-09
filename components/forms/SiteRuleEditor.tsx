@@ -29,8 +29,8 @@ export default function SiteRuleEditor({ rule }: { rule: any }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
-        keywordsPositive: form.keywordsPositive.split(",").map((x) => x.trim()).filter(Boolean),
-        keywordsNegative: form.keywordsNegative.split(",").map((x) => x.trim()).filter(Boolean)
+        keywordsPositive: form.keywordsPositive.split(",").map((x: string) => x.trim()).filter(Boolean),
+        keywordsNegative: form.keywordsNegative.split(",").map((x: string) => x.trim()).filter(Boolean)
       })
     });
 
