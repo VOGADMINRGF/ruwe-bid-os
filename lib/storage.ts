@@ -21,6 +21,7 @@ export type StoreCollection =
   | "costGaps"
   | "parameterMemory"
   | "opportunities"
+  | "queryHistory"
   | "tenders"
   | "pipeline"
   | "references"
@@ -48,6 +49,7 @@ export type StoreShape = {
   costGaps: any[];
   parameterMemory: any[];
   opportunities: any[];
+  queryHistory: any[];
   tenders: any[];
   pipeline: any[];
   references: any[];
@@ -73,6 +75,7 @@ const EMPTY_STORE: StoreShape = {
   costGaps: [],
   parameterMemory: [],
   opportunities: [],
+  queryHistory: [],
   tenders: [],
   pipeline: [],
   references: [],
@@ -97,6 +100,7 @@ function normalizeStore(db: any): StoreShape {
     costGaps: Array.isArray(db?.costGaps) ? db.costGaps : [],
     parameterMemory: Array.isArray(db?.parameterMemory) ? db.parameterMemory : [],
     opportunities: Array.isArray(db?.opportunities) ? db.opportunities : [],
+    queryHistory: Array.isArray(db?.queryHistory) ? db.queryHistory : [],
     globalKeywords:
       db?.globalKeywords && typeof db.globalKeywords === "object" && !Array.isArray(db.globalKeywords)
         ? {
@@ -143,7 +147,7 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","tenders",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
@@ -260,7 +264,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 export async function writeDb(next: StoreShape) {
   const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","tenders",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
   for (const name of names) {
