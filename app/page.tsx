@@ -56,7 +56,8 @@ export default async function DashboardPage() {
             <div className="meta">Datenlage: {meta.dataValidityNote || "-"}</div>
           </div>
           <div className="row">
-            <Link className="button" href="/dashboard/smoke">Smoke</Link>
+            <Link className="button" href="/dashboard/live">Live Abruf</Link>
+            <Link className="button-secondary" href="/dashboard/smoke">Smoke</Link>
             <Link className="button-secondary" href="/dashboard/ai-smoke">AI Test</Link>
             <Link className="button-secondary" href="/dashboard/source-tests">Tests</Link>
             <Link className="linkish" href="/dashboard/monitoring">Details</Link>

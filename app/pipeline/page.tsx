@@ -1,40 +1,43 @@
-import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
+import EmptyModuleCard from "@/components/showcase/EmptyModuleCard";
 
 export default async function PipelinePage() {
-  const db = await readDb();
-  const items = db.pipeline || [];
+  const db = await readStore();
+  const rows = db.pipeline || [];
 
   return (
     <div className="stack">
       <div>
         <h1 className="h1">Pipeline</h1>
-        <p className="sub">Aktive Vorgänge, Stufen und Werte der Vertriebs-Pipeline.</p>
+        <p className="sub">Qualifizierung, Angebot, Verhandlung und operative Steuerung.</p>
       </div>
-      <div className="card table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Titel</th>
-              <th>Stage</th>
-              <th>Wert</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item: any) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.title}</td>
-                <td>{item.stage}</td>
-                <td>{item.value?.toLocaleString("de-DE")} €</td>
-                <td><Link className="linkish" href={`/pipeline/${item.id}`}>Öffnen</Link></td>
+
+      {!rows.length ? (
+        <EmptyModuleCard module="pipeline" />
+      ) : (
+        <div className="card table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Stage</th>
+                <th>Wert</th>
+                <th>Owner</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{r.title}</td>
+                  <td>{r.stage}</td>
+                  <td>{Math.round((r.value || 0) / 1000)}k €</td>
+                  <td>{r.ownerId || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const items = [
   ["/", "Dashboard"],
+  ["/showcase", "Showcase"],
   ["/sources", "Sources"],
   ["/dashboard/monitoring", "Monitoring"],
   ["/dashboard/source-tests", "Source Tests"],

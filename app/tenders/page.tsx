@@ -1,42 +1,45 @@
-import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
+import EmptyModuleCard from "@/components/showcase/EmptyModuleCard";
 
 export default async function TendersPage() {
-  const db = await readDb();
-  const tenders = db.tenders || [];
+  const db = await readStore();
+  const rows = db.tenders || [];
 
   return (
     <div className="stack">
       <div>
         <h1 className="h1">Tenders</h1>
-        <p className="sub">Ausschreibungsregister mit Region, Gewerk, Status und Detailzugriff.</p>
+        <p className="sub">Operative Ausschreibungen mit Entscheidung und Zuständigkeit.</p>
       </div>
-      <div className="card table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Titel</th>
-              <th>Region</th>
-              <th>Gewerk</th>
-              <th>Priorität</th>
-              <th>Entscheidung</th>
-              <th>Frist</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tenders.map((t: any) => (
-              <tr key={t.id}>
-                <td><Link className="linkish" href={`/tenders/${t.id}`}>{t.title}</Link></td>
-                <td>{t.region}</td>
-                <td>{t.trade}</td>
-                <td>{t.priority}</td>
-                <td>{t.decision}</td>
-                <td>{t.dueDate || "-"}</td>
+
+      {!rows.length ? (
+        <EmptyModuleCard module="tenders" />
+      ) : (
+        <div className="card table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Region</th>
+                <th>Gewerk</th>
+                <th>Entscheidung</th>
+                <th>Frist</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{r.title}</td>
+                  <td>{r.region}</td>
+                  <td>{r.trade}</td>
+                  <td>{r.decision}</td>
+                  <td>{r.dueDate || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,40 +1,41 @@
-import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
+import EmptyModuleCard from "@/components/showcase/EmptyModuleCard";
 
 export default async function ReferencesPage() {
-  const db = await readDb();
-  const items = db.references || [];
+  const db = await readStore();
+  const rows = db.references || [];
 
   return (
     <div className="stack">
       <div>
         <h1 className="h1">References</h1>
-        <p className="sub">Referenzdatenbank für spätere Angebots- und Fit-Unterstützung.</p>
+        <p className="sub">Referenzen zur späteren Vertriebsargumentation und Eignung.</p>
       </div>
-      <div className="card table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Titel</th>
-              <th>Gewerk</th>
-              <th>Region</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item: any) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.title}</td>
-                <td>{item.trade}</td>
-                <td>{item.region}</td>
-                <td><Link className="linkish" href={`/references/${item.id}`}>Öffnen</Link></td>
+
+      {!rows.length ? (
+        <EmptyModuleCard module="references" />
+      ) : (
+        <div className="card table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Gewerk</th>
+                <th>Region</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{r.title}</td>
+                  <td>{r.trade}</td>
+                  <td>{r.region}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
