@@ -62,6 +62,8 @@ export default async function DashboardPage() {
             <Link className="button-secondary" href="/dashboard/smoke">Smoke</Link>
             <Link className="button-secondary" href="/dashboard/ai-smoke">AI Test</Link>
             <Link className="button-secondary" href="/dashboard/source-tests">Tests</Link>
+            <Link className="button-secondary" href="/dashboard/forecast">Forecast</Link>
+            <Link className="button-secondary" href="/dashboard/deadlines">Fristen</Link>
             <Link className="linkish" href="/dashboard/monitoring">Details</Link>
           </div>
         </div>
@@ -184,6 +186,40 @@ export default async function DashboardPage() {
           </table>
         </div>
       </section>
+
+      <section className="card">
+        <div className="section-title">Geschäftsfeld × Region × Priorität</div>
+        <div className="meta" style={{ marginBottom: 12 }}>
+          Zeigt, in welchen Regionen sich welche Geschäftsfelder aktuell besonders lohnen.
+        </div>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Gewerk</th>
+                <th>Treffer</th>
+                <th>Bid</th>
+                <th>Prüfen</th>
+                <th>Volumen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {grouped.map((row: any) => (
+                <tr key={`focus_${row.region}_${row.trade}`}>
+                  <td>{row.region}</td>
+                  <td>{row.trade}</td>
+                  <td>{row.count}</td>
+                  <td>{row.bids}</td>
+                  <td>{row.reviews}</td>
+                  <td>{Math.round(row.volume / 1000)}k €</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
     </div>
   );
 }
