@@ -38,6 +38,8 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
             <div className="meta">Distanz: {hit.distanceKm ?? "-"} km</div>
             <div className="meta">Linkstatus: {hit.linkStatus || "-"}</div>
             <div className="meta">Quellenqualität: {hit.sourceQuality || "-"}</div>
+            <div className="meta">AI zulässig: {hit.aiEligible ? "ja" : "nein"}</div>
+            <div className="meta">AI-Blockgrund: {hit.aiBlockedReason || "-"}</div>
           </div>
 
           <div className="toolbar" style={{ marginTop: 20 }}>
