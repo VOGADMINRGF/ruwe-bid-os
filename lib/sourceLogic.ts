@@ -4,41 +4,55 @@ export function sourceUsefulnessScore(stat: any) {
   const go = stat.goLast30Days || 0;
   const errors = stat.errorCountLastRun || 0;
   const dup = stat.duplicateCountLastRun || 0;
-
-  return Math.max(0, (found * 1) + (pre * 2) + (go * 4) - (errors * 5) - (dup * 1));
+  return Math.max(0, found + pre * 2 + go * 4 - errors * 5 - dup);
 }
 
 export function sourceHealth(stat: any) {
   if (!stat) return "unbekannt";
-  if (stat.lastRunOk && (stat.errorCountLastRun || 0) === 0) return "gruen";
+  if (stat.lastRunOk && (stat.errorCountLastRun || 0) === 0) return "grün";
   if ((stat.errorCountLastRun || 0) <= 1) return "gelb";
-  return "rot";
+  return "kritisch";
 }
 
-export function aggregateHitsByRegionAndTrade(hits: any[]) {
-  const map = new Map<string, any>();
+export function smokeSummary(db: any) {
+  const hits = db.sourceHits || [];
+  return {
+    mode: db.meta?.dataMode || "demo",
+    totalHits: hits.length,
+    newSinceLastFetch: hits.filter((x: any) => x.addedSinceLastFetch).length,
+    prefiltered: hits.filter((x: any) => x.status === "prefiltered").length,
+    manualReview: hits.filter((x: any) => x.status === "manual_review").length,
+    observed: hits.filter((x: any) => x.status === "observed").length,
+    bySource: (db.sourceRegistry || []).map((src: any) => ({
+      source: src.name,
+      hits: hits.filter((h: any) => h.sourceId === src.id).length
+    }))
+  };
+}
 
-  for (const hit of hits) {
-    const key = `${hit.region}__${hit.trade}`;
-    const existing = map.get(key) || {
-      region: hit.region,
-      trade: hit.trade,
-      count: 0,
-      volume: 0,
-      durations: []
-    };
+export function aiSmokeForHit(hit: any) {
+  let score = 0;
+  const reasons: string[] = [];
 
-    existing.count += 1;
-    existing.volume += hit.estimatedValue || 0;
-    if (typeof hit.durationMonths === "number") existing.durations.push(hit.durationMonths);
+  if ((hit.distanceKm || 999) <= 10) { score += 30; reasons.push("kurze Distanz"); }
+  else if ((hit.distanceKm || 999) <= 30) { score += 20; reasons.push("solide Distanz"); }
 
-    map.set(key, existing);
-  }
+  if ((hit.estimatedValue || 0) >= 500000) { score += 25; reasons.push("attraktives Volumen"); }
+  else { score += 10; reasons.push("kleineres Volumen"); }
 
-  return [...map.values()].map((row) => ({
-    ...row,
-    avgDurationMonths: row.durations.length
-      ? Math.round(row.durations.reduce((a: number, b: number) => a + b, 0) / row.durations.length)
-      : 0
-  }));
+  if ((hit.durationMonths || 0) >= 24) { score += 20; reasons.push("längere Laufzeit"); }
+  else { score += 8; reasons.push("kürzere Laufzeit"); }
+
+  if (hit.status === "prefiltered") { score += 20; reasons.push("bereits vorqualifiziert"); }
+  else if (hit.status === "manual_review") { score += 10; reasons.push("manuelle Prüfung empfohlen"); }
+
+  const recommendation = score >= 80 ? "Bid" : score >= 55 ? "Prüfen" : "No-Go";
+  const explanation =
+    recommendation === "Bid"
+      ? "Der Treffer passt gut zu Reichweite, Volumen und aktueller Bearbeitungslogik."
+      : recommendation === "Prüfen"
+        ? "Der Treffer ist relevant, sollte aber manuell gegen Kapazität und Leistungsumfang geprüft werden."
+        : "Der Treffer ist aktuell operativ oder wirtschaftlich nicht vorrangig.";
+
+  return { recommendation, score, reasons, explanation };
 }

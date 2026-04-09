@@ -8,13 +8,13 @@ export function formatDateTime(value?: string | null) {
   }).format(d);
 }
 
-export function dataModeLabel(mode?: string) {
+export function modeLabel(mode?: string) {
   if (mode === "live") return "Live";
   if (mode === "smoke") return "Smoke";
   return "Demo";
 }
 
-export function dataModeBadgeClass(mode?: string) {
+export function modeBadgeClass(mode?: string) {
   if (mode === "live") return "badge badge-gut";
   if (mode === "smoke") return "badge badge-gemischt";
   return "badge badge-kritisch";
