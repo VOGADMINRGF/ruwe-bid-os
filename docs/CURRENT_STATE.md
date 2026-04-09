@@ -1,18 +1,21 @@
 # CURRENT_STATE
 
 ## Stand
-Das System ist nun klar auf RUWE-Standorte, Gewerke, Radius und Ausschreibungsbewertung ausgerichtet.
+Das System ist jetzt auf Standort × Gewerk × Radius × Kapazität × Keywords ausgerichtet.
 
 ## Bereits enthalten
-- Sites + SiteTradeRules
-- Dashboard mit Monitoring- und Entscheidungskennzahlen
-- Letzter Datenabruf sichtbar
-- Ausschreibungen gesamt / bid-vorausgewählt / Go / No-Go / manuell prüfen
-- Standort-Abdeckungsübersicht
-- Tender Registry mit Standort-Fit und Distanz
+- Sites
+- Service Areas
+- SiteTradeRules
+- positive/negative Keywords
+- Dashboard mit klickbaren KPI-Karten
+- Monitoring-Nutzen pro Quelle
+- Standortdetail mit nächstgrößerer Radiusklasse
+- Sicht auf potenziell verpasste Ausschreibungen im erweiterten Radiusband
 
 ## Noch offen
-- echte Formulare für Pflege
-- externe Ingestion-Jobs
-- Rollenrechte
-- Alerts / Scheduler / Exporte
+- echte CRUD-Formulare
+- echte Radius-/Keyword-Editoren
+- echte Importjobs
+- Explainability pro Tender
+- Statuswechsel direkt in UI

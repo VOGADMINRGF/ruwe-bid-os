@@ -1,27 +1,47 @@
 {
   "meta": {
     "appName": "RUWE Bid OS",
-    "version": "phase5-operational-upgrade",
-    "lastSeededAt": "2026-04-08T23:30:00.000Z",
+    "version": "capacity-monitoring-upgrade",
+    "lastSeededAt": "2026-04-08T23:45:00.000Z",
     "lastSuccessfulIngestionAt": "2026-04-08T22:45:00.000Z",
     "lastSuccessfulIngestionSource": "TED Europa / Bund.de Aggregation",
-    "pollingSeconds": 60,
-    "activeSources": 3,
-    "newSinceLastRun": 4,
-    "duplicateCountLastRun": 1,
-    "ingestionErrorsLastRun": 0
+    "pollingSeconds": 60
   },
-  "config": {
-    "dashboard": {
-      "compactTopBar": true,
-      "showMonitoringStrip": true,
-      "showPrefilterMetrics": true
+  "sourceStats": [
+    {
+      "id": "src1",
+      "name": "TED Europa",
+      "lastFetchAt": "2026-04-08T22:45:00.000Z",
+      "tendersLast30Days": 24,
+      "tendersSinceLastFetch": 4,
+      "prefilteredLast30Days": 9,
+      "goLast30Days": 3,
+      "errorCountLastRun": 0,
+      "duplicateCountLastRun": 1
     },
-    "assessmentRules": {
-      "good": { "minGoShare": 0.25, "maxOverdue": 0 },
-      "critical": { "maxGoShare": 0.15, "minOverdue": 2 }
+    {
+      "id": "src2",
+      "name": "Bund.de",
+      "lastFetchAt": "2026-04-08T21:55:00.000Z",
+      "tendersLast30Days": 17,
+      "tendersSinceLastFetch": 2,
+      "prefilteredLast30Days": 6,
+      "goLast30Days": 2,
+      "errorCountLastRun": 0,
+      "duplicateCountLastRun": 0
+    },
+    {
+      "id": "src3",
+      "name": "DTVP",
+      "lastFetchAt": "2026-04-08T20:30:00.000Z",
+      "tendersLast30Days": 11,
+      "tendersSinceLastFetch": 1,
+      "prefilteredLast30Days": 2,
+      "goLast30Days": 0,
+      "errorCountLastRun": 1,
+      "duplicateCountLastRun": 0
     }
-  },
+  ],
   "sites": [
     {
       "id": "site_berlin",
@@ -43,7 +63,7 @@
       "active": true,
       "primaryRadiusKm": 45,
       "secondaryRadiusKm": 70,
-      "notes": "Starker operativer Ost-Fokus."
+      "notes": "Ost-Fokus."
     },
     {
       "id": "site_strausberg",
@@ -54,7 +74,7 @@
       "active": true,
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
-      "notes": "Sonderrollen/luftfahrtnah, aber hier als regulärer Site-Anchor modelliert."
+      "notes": "Brandenburg-Achse."
     },
     {
       "id": "site_zeitz",
@@ -65,7 +85,7 @@
       "active": true,
       "primaryRadiusKm": 40,
       "secondaryRadiusKm": 60,
-      "notes": "Sachsen-Anhalt/Südost-Achse."
+      "notes": "Sachsen-Anhalt/Südost."
     }
   ],
   "serviceAreas": [
@@ -78,14 +98,6 @@
     { "id": "sa7", "name": "Zeitz", "siteId": "site_zeitz", "state": "Sachsen-Anhalt", "active": true },
     { "id": "sa8", "name": "Limbach-Oberfrohna", "siteId": "site_torgau", "state": "Sachsen", "active": true }
   ],
-  "trades": [
-    { "id": "tr1", "name": "Facility" },
-    { "id": "tr2", "name": "Sicherheit" },
-    { "id": "tr3", "name": "Reinigung" },
-    { "id": "tr4", "name": "Hausmeister" },
-    { "id": "tr5", "name": "Grünpflege" },
-    { "id": "tr6", "name": "Winterdienst" }
-  ],
   "siteTradeRules": [
     {
       "id": "rule1",
@@ -94,9 +106,12 @@
       "priority": "hoch",
       "primaryRadiusKm": 25,
       "secondaryRadiusKm": 35,
+      "tertiaryRadiusKm": 50,
+      "monthlyCapacity": 8,
+      "concurrentCapacity": 3,
       "enabled": true,
       "keywordsPositive": ["objektschutz", "wachschutz", "sicherheitsdienst"],
-      "keywordsNegative": ["krankenhausgroßsicherheit", "bundeswehr"],
+      "keywordsNegative": ["bundeswehr", "flughafen-großauftrag"],
       "regionNotes": "Berlin selektiv"
     },
     {
@@ -106,9 +121,12 @@
       "priority": "mittel",
       "primaryRadiusKm": 20,
       "secondaryRadiusKm": 30,
+      "tertiaryRadiusKm": 45,
+      "monthlyCapacity": 5,
+      "concurrentCapacity": 2,
       "enabled": true,
-      "keywordsPositive": ["hausmeister", "facility", "objektservice"],
-      "keywordsNegative": ["hochkomplexe tgm"],
+      "keywordsPositive": ["facility", "objektservice", "hausmeister"],
+      "keywordsNegative": ["tgm-komplex"],
       "regionNotes": "Nur selektiv"
     },
     {
@@ -118,6 +136,9 @@
       "priority": "hoch",
       "primaryRadiusKm": 45,
       "secondaryRadiusKm": 70,
+      "tertiaryRadiusKm": 90,
+      "monthlyCapacity": 14,
+      "concurrentCapacity": 6,
       "enabled": true,
       "keywordsPositive": ["facility", "objektservice", "hausmeister", "unterhaltsreinigung"],
       "keywordsNegative": [],
@@ -130,6 +151,9 @@
       "priority": "hoch",
       "primaryRadiusKm": 50,
       "secondaryRadiusKm": 75,
+      "tertiaryRadiusKm": 95,
+      "monthlyCapacity": 18,
+      "concurrentCapacity": 8,
       "enabled": true,
       "keywordsPositive": ["unterhaltsreinigung", "glasreinigung", "gebäudereinigung"],
       "keywordsNegative": [],
@@ -142,10 +166,13 @@
       "priority": "mittel",
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
+      "tertiaryRadiusKm": 75,
+      "monthlyCapacity": 6,
+      "concurrentCapacity": 2,
       "enabled": true,
       "keywordsPositive": ["sicherheitsdienst", "objektschutz"],
       "keywordsNegative": [],
-      "regionNotes": "nur bei Fit"
+      "regionNotes": "bei Fit"
     },
     {
       "id": "rule6",
@@ -154,6 +181,9 @@
       "priority": "hoch",
       "primaryRadiusKm": 40,
       "secondaryRadiusKm": 60,
+      "tertiaryRadiusKm": 80,
+      "monthlyCapacity": 12,
+      "concurrentCapacity": 5,
       "enabled": true,
       "keywordsPositive": ["reinigung", "glasreinigung", "sonderreinigung"],
       "keywordsNegative": [],
@@ -166,10 +196,13 @@
       "priority": "hoch",
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
+      "tertiaryRadiusKm": 75,
+      "monthlyCapacity": 10,
+      "concurrentCapacity": 4,
       "enabled": true,
       "keywordsPositive": ["hausmeister", "objektbetreuung"],
       "keywordsNegative": [],
-      "regionNotes": "kommunal interessant"
+      "regionNotes": "kommunal"
     },
     {
       "id": "rule8",
@@ -178,6 +211,9 @@
       "priority": "mittel",
       "primaryRadiusKm": 30,
       "secondaryRadiusKm": 50,
+      "tertiaryRadiusKm": 70,
+      "monthlyCapacity": 5,
+      "concurrentCapacity": 2,
       "enabled": true,
       "keywordsPositive": ["sicherheitsdienst", "wachdienst"],
       "keywordsNegative": [],
@@ -188,7 +224,8 @@
     { "id": "b1", "name": "Stadt Leipzig", "type": "kommunal", "strategic": true },
     { "id": "b2", "name": "Jobcenter Salzlandkreis", "type": "öffentlich", "strategic": true },
     { "id": "b3", "name": "Bezirksamt Berlin", "type": "kommunal", "strategic": false },
-    { "id": "b4", "name": "Landratsamt Altenburg", "type": "öffentlich", "strategic": true }
+    { "id": "b4", "name": "Landratsamt Altenburg", "type": "öffentlich", "strategic": true },
+    { "id": "b5", "name": "Land Brandenburg", "type": "öffentlich", "strategic": false }
   ],
   "agents": [
     { "id": "a1", "name": "Agent 1", "focus": "Facility Ost", "level": "Koordinator", "region": "Torgau/Ost", "winRate": 0.41, "pipelineValue": 4200000 },
@@ -214,7 +251,7 @@
       "riskLevel": "niedrig",
       "estimatedValue": 1800000,
       "dueDate": "2026-05-10",
-      "sourceType": "portal",
+      "sourceType": "TED Europa",
       "ingestedAt": "2026-04-08T22:40:00.000Z",
       "distanceKm": 18,
       "matchedSiteId": "site_torgau",
@@ -236,7 +273,7 @@
       "riskLevel": "mittel",
       "estimatedValue": 2400000,
       "dueDate": "2026-04-20",
-      "sourceType": "portal",
+      "sourceType": "Bund.de",
       "ingestedAt": "2026-04-08T22:41:00.000Z",
       "distanceKm": 22,
       "matchedSiteId": "site_zeitz",
@@ -258,7 +295,7 @@
       "riskLevel": "hoch",
       "estimatedValue": 900000,
       "dueDate": "2026-04-18",
-      "sourceType": "portal",
+      "sourceType": "TED Europa",
       "ingestedAt": "2026-04-08T22:42:00.000Z",
       "distanceKm": 14,
       "matchedSiteId": "site_berlin",
@@ -280,12 +317,56 @@
       "riskLevel": "niedrig",
       "estimatedValue": 650000,
       "dueDate": "2026-04-25",
-      "sourceType": "portal",
+      "sourceType": "Bund.de",
       "ingestedAt": "2026-04-08T22:43:00.000Z",
       "distanceKm": 17,
       "matchedSiteId": "site_zeitz",
       "prefilteredForBid": true,
       "sourceKeywords": ["hausmeister", "objektbetreuung"]
+    },
+    {
+      "id": "t5",
+      "title": "Wachdienst Brandenburg Nord",
+      "region": "Brandenburg Nord",
+      "trade": "Sicherheit",
+      "buyerId": "b5",
+      "ownerId": "",
+      "priority": "B",
+      "decision": "No-Go",
+      "status": "beobachten",
+      "manualReview": "optional",
+      "fitSummary": "mittel",
+      "riskLevel": "mittel",
+      "estimatedValue": 480000,
+      "dueDate": "2026-04-27",
+      "sourceType": "DTVP",
+      "ingestedAt": "2026-04-08T22:44:00.000Z",
+      "distanceKm": 62,
+      "matchedSiteId": "site_strausberg",
+      "prefilteredForBid": false,
+      "sourceKeywords": ["wachdienst", "objektschutz"]
+    },
+    {
+      "id": "t6",
+      "title": "Reinigung regionaler Verwaltungsverbund",
+      "region": "Sachsen Ost",
+      "trade": "Reinigung",
+      "buyerId": "b1",
+      "ownerId": "",
+      "priority": "B",
+      "decision": "Prüfen",
+      "status": "beobachten",
+      "manualReview": "optional",
+      "fitSummary": "mittel",
+      "riskLevel": "mittel",
+      "estimatedValue": 730000,
+      "dueDate": "2026-04-28",
+      "sourceType": "TED Europa",
+      "ingestedAt": "2026-04-08T22:44:30.000Z",
+      "distanceKm": 82,
+      "matchedSiteId": "site_torgau",
+      "prefilteredForBid": false,
+      "sourceKeywords": ["gebäudereinigung", "sonderreinigung"]
     }
   ],
   "pipeline": [
@@ -310,14 +391,5 @@
       "region": "Sachsen-Anhalt",
       "value": 2300000
     }
-  ],
-  "ingestion": {
-    "sources": [
-      { "id": "i1", "name": "TED Europa", "type": "rss", "status": "ready" },
-      { "id": "i2", "name": "Bund.de", "type": "portal", "status": "planned" },
-      { "id": "i3", "name": "DTVP", "type": "portal", "status": "planned" }
-    ],
-    "jobs": [],
-    "lastRunAt": "2026-04-08T22:45:00.000Z"
-  }
+  ]
 }
