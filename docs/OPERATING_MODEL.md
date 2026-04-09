@@ -1,10 +1,11 @@
 # OPERATING_MODEL
 
-Das System ist ein Management- und Steuerungswerkzeug, kein bloßer Listencontainer.
+## Leitprinzip
+Nicht Ausschreibungen zuerst, sondern RUWE-Abdeckung zuerst.
 
-## Leitprinzipien
-- Zone statt Bundesland
-- Radius statt pauschaler Region
-- Gewerk statt allgemeiner Kategorie
-- Mensch bleibt Entscheider
-- No-Go ist dokumentationspflichtig
+## Kernfragen
+- Welcher Standort ist zuständig?
+- Welches Gewerk ist an diesem Standort aktiv?
+- In welchem Radius liegt die Ausschreibung?
+- Ist sie bid-vorausgewählt, zu prüfen oder klar No-Go?
+- Wann war der letzte Abruf?

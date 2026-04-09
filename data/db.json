@@ -1,9 +1,15 @@
 {
   "meta": {
     "appName": "RUWE Bid OS",
-    "version": "phase5-master",
-    "lastSeededAt": "2026-04-08T22:30:00.000Z",
-    "pollingSeconds": 60
+    "version": "site-focus-upgrade",
+    "lastSeededAt": "2026-04-08T23:00:00.000Z",
+    "lastSuccessfulIngestionAt": "2026-04-08T22:45:00.000Z",
+    "lastSuccessfulIngestionSource": "TED Europa / Bund.de Aggregation",
+    "pollingSeconds": 60,
+    "activeSources": 3,
+    "newSinceLastRun": 4,
+    "duplicateCountLastRun": 1,
+    "ingestionErrorsLastRun": 0
   },
   "config": {
     "assessmentRules": {
@@ -18,25 +24,81 @@
       }
     },
     "tradeMatrix": {
-      "Facility": { "radiusPrimaryKm": 45, "radiusSecondaryKm": 70, "baseWeight": 1.0 },
-      "Sicherheit": { "radiusPrimaryKm": 35, "radiusSecondaryKm": 60, "baseWeight": 1.1 },
-      "Reinigung": { "radiusPrimaryKm": 40, "radiusSecondaryKm": 65, "baseWeight": 0.95 },
-      "Hausmeister": { "radiusPrimaryKm": 30, "radiusSecondaryKm": 50, "baseWeight": 0.9 },
-      "Grünpflege": { "radiusPrimaryKm": 30, "radiusSecondaryKm": 45, "baseWeight": 0.7 },
-      "Winterdienst": { "radiusPrimaryKm": 25, "radiusSecondaryKm": 40, "baseWeight": 0.65 }
+      "Facility": { "baseWeight": 1.0 },
+      "Sicherheit": { "baseWeight": 1.1 },
+      "Reinigung": { "baseWeight": 0.95 },
+      "Hausmeister": { "baseWeight": 0.9 },
+      "Grünpflege": { "baseWeight": 0.7 },
+      "Winterdienst": { "baseWeight": 0.65 }
     },
     "sources": [
       { "id": "s1", "name": "TED Europa", "type": "rss", "url": "https://ted.europa.eu" },
       { "id": "s2", "name": "Bund.de", "type": "portal", "url": "https://www.service.bund.de" },
       { "id": "s3", "name": "DTVP", "type": "portal", "url": "https://www.dtvp.de" }
-    ],
-    "roles": [
-      { "key": "management", "label": "Management" },
-      { "key": "coordinator", "label": "Koordinator" },
-      { "key": "assistant", "label": "Assistenz" },
-      { "key": "analyst", "label": "Analyst" }
     ]
   },
+  "sites": [
+    {
+      "id": "site1",
+      "name": "RUWE Leipzig",
+      "city": "Leipzig",
+      "state": "Sachsen",
+      "active": true,
+      "primaryRadiusKm": 45,
+      "secondaryRadiusKm": 70,
+      "ownerId": "a1",
+      "notes": "Ost-Fokus für Facility und Sicherheit."
+    },
+    {
+      "id": "site2",
+      "name": "RUWE Magdeburg",
+      "city": "Magdeburg",
+      "state": "Sachsen-Anhalt",
+      "active": true,
+      "primaryRadiusKm": 40,
+      "secondaryRadiusKm": 60,
+      "ownerId": "a2",
+      "notes": "Starker Sicherheit-/Reinigungsfokus."
+    },
+    {
+      "id": "site3",
+      "name": "RUWE Gera",
+      "city": "Gera",
+      "state": "Thüringen",
+      "active": true,
+      "primaryRadiusKm": 35,
+      "secondaryRadiusKm": 55,
+      "ownerId": "a3",
+      "notes": "Kommunal und Hausmeister/FM."
+    },
+    {
+      "id": "site4",
+      "name": "RUWE Berlin selektiv",
+      "city": "Berlin",
+      "state": "Berlin",
+      "active": true,
+      "primaryRadiusKm": 25,
+      "secondaryRadiusKm": 35,
+      "ownerId": "a4",
+      "notes": "Nur selektive Teilnahme."
+    }
+  ],
+  "siteTradeRules": [
+    { "id": "str1", "siteId": "site1", "trade": "Facility", "priority": "hoch", "primaryRadiusKm": 45, "secondaryRadiusKm": 70, "enabled": true },
+    { "id": "str2", "siteId": "site1", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
+    { "id": "str3", "siteId": "site1", "trade": "Reinigung", "priority": "mittel", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
+
+    { "id": "str4", "siteId": "site2", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
+    { "id": "str5", "siteId": "site2", "trade": "Reinigung", "priority": "hoch", "primaryRadiusKm": 45, "secondaryRadiusKm": 65, "enabled": true },
+    { "id": "str6", "siteId": "site2", "trade": "Facility", "priority": "mittel", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
+
+    { "id": "str7", "siteId": "site3", "trade": "Hausmeister", "priority": "hoch", "primaryRadiusKm": 35, "secondaryRadiusKm": 55, "enabled": true },
+    { "id": "str8", "siteId": "site3", "trade": "Facility", "priority": "hoch", "primaryRadiusKm": 40, "secondaryRadiusKm": 60, "enabled": true },
+    { "id": "str9", "siteId": "site3", "trade": "Reinigung", "priority": "mittel", "primaryRadiusKm": 30, "secondaryRadiusKm": 45, "enabled": true },
+
+    { "id": "str10", "siteId": "site4", "trade": "Sicherheit", "priority": "hoch", "primaryRadiusKm": 25, "secondaryRadiusKm": 35, "enabled": true },
+    { "id": "str11", "siteId": "site4", "trade": "Facility", "priority": "mittel", "primaryRadiusKm": 20, "secondaryRadiusKm": 30, "enabled": true }
+  ],
   "zones": [
     {
       "id": "z1",
@@ -46,8 +108,7 @@
       "primaryRadiusKm": 45,
       "secondaryRadiusKm": 70,
       "priorityTrades": ["Facility", "Sicherheit"],
-      "supportedTrades": ["Reinigung", "Hausmeister"],
-      "notes": "Ausbauzone Ost mit Fokus auf Facility und Sicherheit."
+      "supportedTrades": ["Reinigung", "Hausmeister"]
     },
     {
       "id": "z2",
@@ -57,8 +118,7 @@
       "primaryRadiusKm": 40,
       "secondaryRadiusKm": 60,
       "priorityTrades": ["Sicherheit", "Reinigung"],
-      "supportedTrades": ["Facility"],
-      "notes": "Starker Fit für sicherheitsnahe Lose."
+      "supportedTrades": ["Facility"]
     },
     {
       "id": "z3",
@@ -68,8 +128,7 @@
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
       "priorityTrades": ["Hausmeister", "Facility"],
-      "supportedTrades": ["Reinigung"],
-      "notes": "Geeignet für wiederkehrende kommunale Lose."
+      "supportedTrades": ["Reinigung"]
     },
     {
       "id": "z4",
@@ -79,8 +138,7 @@
       "primaryRadiusKm": 25,
       "secondaryRadiusKm": 35,
       "priorityTrades": ["Sicherheit"],
-      "supportedTrades": ["Facility"],
-      "notes": "Preisgetrieben, nur selektiv spielen."
+      "supportedTrades": ["Facility"]
     }
   ],
   "buyers": [
@@ -115,7 +173,8 @@
       "estimatedValue": 1800000,
       "dueDate": "2026-05-10",
       "sourceType": "portal",
-      "notes": "Starker strategischer Fit in Zielzone."
+      "ingestedAt": "2026-04-08T22:40:00.000Z",
+      "distanceKm": 18
     },
     {
       "id": "t2",
@@ -134,7 +193,8 @@
       "estimatedValue": 2400000,
       "dueDate": "2026-04-20",
       "sourceType": "portal",
-      "notes": "Gutes Volumen, manuelle Prüfung wegen Leistungsumfang."
+      "ingestedAt": "2026-04-08T22:41:00.000Z",
+      "distanceKm": 22
     },
     {
       "id": "t3",
@@ -153,7 +213,8 @@
       "estimatedValue": 900000,
       "dueDate": "2026-04-18",
       "sourceType": "portal",
-      "notes": "Preislich unattraktiv."
+      "ingestedAt": "2026-04-08T22:42:00.000Z",
+      "distanceKm": 14
     },
     {
       "id": "t4",
@@ -172,7 +233,8 @@
       "estimatedValue": 650000,
       "dueDate": "2026-04-25",
       "sourceType": "portal",
-      "notes": "Guter Fit, aber geringeres Volumen."
+      "ingestedAt": "2026-04-08T22:43:00.000Z",
+      "distanceKm": 17
     }
   ],
   "pipeline": [
@@ -205,6 +267,6 @@
       { "id": "i3", "name": "DTVP", "type": "portal", "status": "planned" }
     ],
     "jobs": [],
-    "lastRunAt": null
+    "lastRunAt": "2026-04-08T22:45:00.000Z"
   }
 }

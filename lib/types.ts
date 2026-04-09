@@ -2,6 +2,28 @@ export type TenderPriority = "A" | "B" | "C";
 export type TenderDecision = "Go" | "Prüfen" | "No-Go";
 export type TenderStatus = "neu" | "vorqualifiziert" | "manuelle_pruefung" | "go" | "no_go" | "beobachten";
 
+export interface Site {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  active: boolean;
+  primaryRadiusKm: number;
+  secondaryRadiusKm: number;
+  ownerId?: string;
+  notes?: string;
+}
+
+export interface SiteTradeRule {
+  id: string;
+  siteId: string;
+  trade: string;
+  priority: "hoch" | "mittel" | "niedrig";
+  primaryRadiusKm: number;
+  secondaryRadiusKm: number;
+  enabled: boolean;
+}
+
 export interface Zone {
   id: string;
   name: string;
@@ -11,7 +33,6 @@ export interface Zone {
   secondaryRadiusKm: number;
   priorityTrades: string[];
   supportedTrades: string[];
-  notes?: string;
 }
 
 export interface Buyer {
@@ -48,7 +69,8 @@ export interface Tender {
   estimatedValue: number;
   dueDate?: string;
   sourceType?: string;
-  notes?: string;
+  ingestedAt?: string;
+  distanceKm?: number;
 }
 
 export interface PipelineEntry {
