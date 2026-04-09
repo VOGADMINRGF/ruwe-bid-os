@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { readStore } from "@/lib/storage";
 
-export default async function SitesPage() {
+export default async function Betriebshöfe & NiederlassungenPage() {
   const db = await readStore();
   const sites = db.sites || [];
   const rules = db.siteTradeRules || [];
@@ -10,10 +10,10 @@ export default async function SitesPage() {
     <div className="stack">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h1 className="h1">Sites</h1>
-          <p className="sub">Offizielle RUWE-Standorte und Gruppengesellschaften mit editierbarer Logik.</p>
+          <h1 className="h1">Betriebshöfe & Niederlassungen</h1>
+          <p className="sub">Aktive Betriebshöfe und Niederlassungen mit Radius-, Gewerk- und Regelsteuerung.</p>
         </div>
-        <Link className="button" href="/sites/new">Neuer Standort</Link>
+        <Link className="button" href="/sites/new">Neuer Betriebshof</Link>
       </div>
 
       <div className="card table-wrap">

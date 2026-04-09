@@ -4,67 +4,54 @@ import { deadlineView } from "@/lib/forecastLogic";
 export default async function DeadlinesPage() {
   const db = await readStore();
   const tenders = deadlineView(db.tenders || []);
-  const pipeline = deadlineView(db.pipeline || []);
 
   return (
     <div className="stack">
       <div>
         <h1 className="h1">Fristen</h1>
-        <p className="sub">Welche Chancen zeitkritisch sind und kurzfristig bearbeitet werden müssen.</p>
+        <p className="sub">Zeitkritische Chancen und der unmittelbare Bearbeitungsdruck.</p>
       </div>
 
-      <div className="card">
-        <div className="section-title">Tender-Fristen</div>
-        <div className="table-wrap" style={{ marginTop: 12 }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Titel</th>
-                <th>Entscheidung</th>
-                <th>Frist</th>
-                <th>Tage</th>
-                <th>Bucket</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tenders.map((row: any) => (
-                <tr key={row.id}>
-                  <td>{row.title}</td>
-                  <td>{row.decision}</td>
-                  <td>{row.dueDate || "-"}</td>
-                  <td>{row.daysLeft}</td>
-                  <td>{row.bucket}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="grid grid-3">
+        <div className="card">
+          <div className="label">Innerhalb 7 Tage</div>
+          <div className="kpi">{tenders.filter((x: any) => x.daysLeft >= 0 && x.daysLeft <= 7).length}</div>
         </div>
-      </div>
+        <div className="card">
+          <div className="label">Innerhalb 14 Tage</div>
+          <div className="kpi">{tenders.filter((x: any) => x.daysLeft >= 8 && x.daysLeft <= 14).length}</div>
+        </div>
+        <div className="card">
+          <div className="label">Überfällig</div>
+          <div className="kpi">{tenders.filter((x: any) => x.daysLeft < 0).length}</div>
+        </div>
+      </section>
 
-      <div className="card">
-        <div className="section-title">Pipeline-Fristen</div>
-        <div className="table-wrap" style={{ marginTop: 12 }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Titel</th>
-                <th>Stage</th>
-                <th>Nächster Schritt</th>
-                <th>EOW</th>
+      <div className="card table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Entscheidung</th>
+              <th>Frist</th>
+              <th>Tage</th>
+              <th>Status</th>
+              <th>Nächster Schritt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tenders.map((row: any) => (
+              <tr key={row.id}>
+                <td>{row.title}</td>
+                <td>{row.decision}</td>
+                <td>{row.dueDate || "-"}</td>
+                <td>{row.daysLeft}</td>
+                <td>{row.bucket}</td>
+                <td>{row.nextStep || "-"}</td>
               </tr>
-            </thead>
-            <tbody>
-              {pipeline.map((row: any) => (
-                <tr key={row.id}>
-                  <td>{row.title}</td>
-                  <td>{row.stage}</td>
-                  <td>{row.nextStep || "-"}</td>
-                  <td>{row.eowUpdate || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

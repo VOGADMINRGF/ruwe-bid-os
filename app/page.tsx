@@ -1,114 +1,105 @@
 import Link from "next/link";
 import { readStore } from "@/lib/storage";
-import { sourceUsefulnessScore, aggregateHitsByRegionAndTrade, aggregateSourceRegionTradePotential } from "@/lib/sourceLogic";
-import { formatDateTime, modeBadgeClass, modeLabel } from "@/lib/format";
+import { formatDateTime, modeLabel, modeBadgeClass } from "@/lib/format";
+import { aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
+import { topDeadlineStats, topForecastCards, sourcePerformanceRows, pipelineStageSummary, managementSummary } from "@/lib/dashboardLogic";
 
-function KpiCard({ href, label, value, sub }: { href: string; label: string; value: string | number; sub?: string }) {
+function DecisionCard({ href, label, value, sub }: { href: string; label: string; value: string | number; sub: string }) {
   return (
-    <Link href={href} className="card" style={{ display: "block" }}>
+    <Link href={href} className="card">
       <div className="label">{label}</div>
       <div className="kpi">{value}</div>
-      {sub ? <div className="meta" style={{ marginTop: 8 }}>{sub}</div> : null}
+      <div className="meta" style={{ marginTop: 10 }}>{sub}</div>
     </Link>
   );
 }
 
 export default async function DashboardPage() {
   const db = await readStore();
-  const hits = db.sourceHits || [];
-  const registry = db.sourceRegistry || [];
-  const stats = db.sourceStats || [];
-  const sites = (db.sites || []).filter((x: any) => x.active);
-  const rules = (db.siteTradeRules || []).filter((x: any) => x.enabled);
   const meta = db.meta || {};
-
-  const newHits = hits.filter((x: any) => x.addedSinceLastFetch);
-  const prefiltered = hits.filter((x: any) => x.status === "prefiltered");
-  const manual = hits.filter((x: any) => x.status === "manual_review");
-  const grouped = aggregateHitsByRegionAndTrade(hits);
-  const potential = aggregateSourceRegionTradePotential(db);
-
-  const rows = registry.map((src: any) => {
-    const stat = stats.find((s: any) => s.id === src.id) || {};
-    return { ...src, ...stat, usefulnessScore: sourceUsefulnessScore(stat) };
-  }).sort((a: any, b: any) => b.usefulnessScore - a.usefulnessScore);
-
-  const bestSource = rows[0];
+  const hits = db.sourceHits || [];
+  const management = managementSummary(db);
+  const deadlines = topDeadlineStats(db);
+  const forecastCards = topForecastCards(db);
+  const sourceRows = sourcePerformanceRows(db);
+  const grouped = aggregateHitsByRegionAndTrade(hits).slice(0, 10);
+  const stages = pipelineStageSummary(db);
   const mode = meta.dataMode || "test";
 
   return (
     <div className="stack">
-      <section>
-        <h1 className="h1">Vertriebssteuerung neu denken.</h1>
+      <section className="stack" style={{ gap: 8 }}>
+        <h1 className="h1">Ausschreibungen gezielt steuern.</h1>
         <p className="sub">
-          Betriebshof-, Gewerk-, Radius- und Quellen-gesteuerte Steuerzentrale für RUWE.
+          Steuerzentrale für Ausschreibungen nach Region, Gewerk, Radius und Quelle.
         </p>
       </section>
 
       <section className="card">
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div className="stack" style={{ gap: 6 }}>
-            <div className="row" style={{ gap: 10, alignItems: "center" }}>
-              <div className="label">Monitoring Schnellblick</div>
+        <div className="focus-callout">
+          <div className="stack" style={{ gap: 10 }}>
+            <div className="row" style={{ alignItems: "center", gap: 10 }}>
+              <div className="section-title">Management-Schnellblick</div>
               <span className={modeBadgeClass(mode)}>Datenstand: {modeLabel(mode)}</span>
             </div>
             <div className="meta">Letzter Abruf: {formatDateTime(meta.lastSuccessfulIngestionAt)}</div>
             <div className="meta">Letzte Quelle: {meta.lastSuccessfulIngestionSource || "-"}</div>
             <div className="meta">{meta.dataValidityNote || "-"}</div>
+
+            <div className="row" style={{ marginTop: 8 }}>
+              <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
+              <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
+              <Link className="button-secondary" href="/dashboard/forecast">Forecast</Link>
+              <Link className="button-secondary" href="/dashboard/deadlines">Fristen</Link>
+            </div>
           </div>
-          <div className="row">
-            <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
-            <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
-            <Link className="button-secondary" href="/dashboard/smoke">Smoke</Link>
-            <Link className="button-secondary" href="/dashboard/ai-smoke">AI Test</Link>
-            <Link className="button-secondary" href="/dashboard/source-tests">Tests</Link>
-            <Link className="button-secondary" href="/dashboard/forecast">Forecast</Link>
-            <Link className="button-secondary" href="/dashboard/deadlines">Fristen</Link>
-            <Link className="linkish" href="/dashboard/monitoring">Details</Link>
+
+          <div className="card soft">
+            <div className="section-title">Management-Ableitung</div>
+            <p className="meta" style={{ marginTop: 14 }}>{management.leadText}</p>
+            <p className="meta">{management.secondText}</p>
+            <p className="meta" style={{ marginTop: 14 }}>
+              Fristen in 7 Tagen: {deadlines.due7} · in 14 Tagen: {deadlines.due14} · überfällig: {deadlines.overdue}
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="grid grid-6">
-        <KpiCard href="/source-hits" label="Neu seit letztem Abruf" value={newHits.length} sub="Neue Treffer" />
-        <KpiCard href="/source-hits" label="Gesamt Treffer" value={hits.length} sub="Öffnet alle Treffer" />
-        <KpiCard href="/source-hits?status=prefiltered" label="Vorausgewählt" value={prefiltered.length} sub="Bid-Kandidaten" />
-        <KpiCard href="/source-hits?status=manual_review" label="Manuell prüfen" value={manual.length} sub="Offene Entscheidungen" />
-        <KpiCard href="/sites" label="Standorte / Regeln" value={`${sites.length} / ${rules.length}`} sub="Aktive Abdeckung" />
-        <KpiCard href="/dashboard/monitoring" label="Sinnvollste Quelle" value={bestSource?.name || "-"} sub={`Score: ${bestSource?.usefulnessScore || 0}`} />
+      <section className="grid grid-5">
+        <DecisionCard href="/source-hits" label="Neue Treffer" value={hits.filter((x: any) => x.addedSinceLastFetch).length} sub="Seit letztem Abruf" />
+        <DecisionCard href="/source-hits?status=prefiltered" label="Bid-Kandidaten" value={management.bid} sub="Jetzt aktiv prüfen" />
+        <DecisionCard href="/source-hits?status=manual_review" label="Reviews offen" value={management.review} sub="Manuelle Prüfung" />
+        <DecisionCard href="/dashboard/deadlines" label="Fristen 7 Tage" value={deadlines.due7} sub="Sofort handeln" />
+        <DecisionCard href="/sites" label="Betriebshöfe / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="Aktive Abdeckung" />
       </section>
 
       <section className="grid grid-2">
         <div className="card">
-          <div className="section-title">Quellen & Nutzen</div>
-          <div className="meta" style={{ marginBottom: 12 }}>
-            Zeigt den operativen Nutzen pro Quelle für die aktuellen Gewerke und Regionen.
+          <div className="section-title">Wo lohnt Fokus?</div>
+          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
+            Geschäftsfelder und Regionen mit dem stärksten aktuellen Marktbild.
           </div>
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Quelle</th>
-                  <th>Datenstand</th>
-                  <th>Letzter Abruf</th>
-                  <th>Letzter Monat</th>
-                  <th>Seit Abruf</th>
-                  <th>Vorausgewählt</th>
-                  <th>Go</th>
-                  <th>Score</th>
+                  <th>Geschäftsfeld</th>
+                  <th>Region</th>
+                  <th>Treffer</th>
+                  <th>Volumen</th>
+                  <th>Bid</th>
+                  <th>Prüfen</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row: any) => (
-                  <tr key={row.id}>
-                    <td>{row.name}</td>
-                    <td>{modeLabel(row.dataMode || mode)}</td>
-                    <td>{formatDateTime(row.lastFetchAt)}</td>
-                    <td>{row.tendersLast30Days || 0}</td>
-                    <td>{row.tendersSinceLastFetch || 0}</td>
-                    <td>{row.prefilteredLast30Days || 0}</td>
-                    <td>{row.goLast30Days || 0}</td>
-                    <td>{row.usefulnessScore}</td>
+                {forecastCards.map((row: any) => (
+                  <tr key={`${row.trade}_${row.region}`}>
+                    <td>{row.trade}</td>
+                    <td>{row.region}</td>
+                    <td>{row.count}</td>
+                    <td>{Math.round(row.volume / 1000)}k €</td>
+                    <td>{row.bids}</td>
+                    <td>{row.reviews}</td>
                   </tr>
                 ))}
               </tbody>
@@ -117,16 +108,65 @@ export default async function DashboardPage() {
         </div>
 
         <div className="card">
-          <div className="section-title">Region × Gewerk × Volumen</div>
-          <div className="meta" style={{ marginBottom: 12 }}>
-            Welche Regionen und Gewerke aktuell über Quellen sichtbar und grundsätzlich attraktiv erscheinen.
+          <div className="section-title">Quellenleistung</div>
+          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
+            Welche Quellen aktuell am meisten verwertbare Treffer liefern.
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Quelle</th>
+                  <th>Letzter Abruf</th>
+                  <th>Seit Abruf</th>
+                  <th>Go</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sourceRows.slice(0, 6).map((row: any) => (
+                  <tr key={row.id}>
+                    <td>{row.name}</td>
+                    <td>{formatDateTime(row.lastFetchAt)}</td>
+                    <td>{row.tendersSinceLastFetch}</td>
+                    <td>{row.goLast30Days}</td>
+                    <td>{row.score}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="section-title">Pipeline-Steuerung</div>
+        <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
+          Stages, Volumen und Bearbeitungsdruck im Überblick.
+        </div>
+        <div className="stage-board">
+          {stages.map((stage: any) => (
+            <div key={stage.stage} className="stage-card">
+              <div className="label">{stage.stage}</div>
+              <div className="stage-count">{stage.count}</div>
+              <div className="stage-value">{Math.round(stage.value / 1000)}k €</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid grid-2">
+        <div className="card">
+          <div className="section-title">Region × Geschäftsfeld × Volumen</div>
+          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
+            Strukturbild der sichtbarsten Marktsegmente.
           </div>
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
                   <th>Region</th>
-                  <th>Gewerk</th>
+                  <th>Geschäftsfeld</th>
                   <th>Quellen</th>
                   <th>Anzahl</th>
                   <th>Volumen</th>
@@ -148,78 +188,34 @@ export default async function DashboardPage() {
             </table>
           </div>
         </div>
-      </section>
 
-      <section className="card">
-        <div className="section-title">Regionenpotenzial je Gewerk</div>
-        <div className="meta" style={{ marginBottom: 12 }}>
-          Zeigt, was in den jeweiligen Regionen gemessen an Quellen, Gewerken und nächster Radiusklasse zusätzlich prüfenswert wäre.
-        </div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Region</th>
-                <th>Gewerk</th>
-                <th>Quellen</th>
-                <th>Treffer</th>
-                <th>Bid</th>
-                <th>Prüfen</th>
-                <th>Nächste Radiusklasse</th>
-                <th>Aktive Standorte</th>
-              </tr>
-            </thead>
-            <tbody>
-              {potential.map((row: any) => (
-                <tr key={`${row.region}_${row.trade}`}>
-                  <td>{row.region}</td>
-                  <td>{row.trade}</td>
-                  <td>{row.sources}</td>
-                  <td>{row.total}</td>
-                  <td>{row.bid}</td>
-                  <td>{row.review}</td>
-                  <td>{row.nearNextRadius}</td>
-                  <td>{row.activeSites}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="card">
+          <div className="section-title">Jetzt handeln</div>
+          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
+            Die drei wichtigsten unmittelbaren Arbeitsfelder.
+          </div>
+          <div className="stack">
+            <div className="card soft">
+              <div className="label">Fristen</div>
+              <div className="meta" style={{ marginTop: 10 }}>
+                {deadlines.due7} Chancen laufen innerhalb von 7 Tagen ab.
+              </div>
+            </div>
+            <div className="card soft">
+              <div className="label">Reviews</div>
+              <div className="meta" style={{ marginTop: 10 }}>
+                {management.review} Treffer benötigen manuelle Entscheidung.
+              </div>
+            </div>
+            <div className="card soft">
+              <div className="label">Fokus</div>
+              <div className="meta" style={{ marginTop: 10 }}>
+                {management.leadText}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
-      <section className="card">
-        <div className="section-title">Geschäftsfeld × Region × Priorität</div>
-        <div className="meta" style={{ marginBottom: 12 }}>
-          Zeigt, in welchen Regionen sich welche Geschäftsfelder aktuell besonders lohnen.
-        </div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Region</th>
-                <th>Gewerk</th>
-                <th>Treffer</th>
-                <th>Bid</th>
-                <th>Prüfen</th>
-                <th>Volumen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grouped.map((row: any) => (
-                <tr key={`focus_${row.region}_${row.trade}`}>
-                  <td>{row.region}</td>
-                  <td>{row.trade}</td>
-                  <td>{row.count}</td>
-                  <td>{row.bids}</td>
-                  <td>{row.reviews}</td>
-                  <td>{Math.round(row.volume / 1000)}k €</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
     </div>
   );
 }

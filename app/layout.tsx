@@ -1,23 +1,20 @@
 import "./globals.css";
-import Nav from "@/components/Nav";
-import type { Metadata } from "next";
+import MainNav from "@/components/MainNav";
+import type { ReactNode } from "react";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "RUWE Bid OS",
-  description: "Vertriebssteuerung neu denken"
+  description: "Steuerzentrale für Ausschreibungen nach Region, Gewerk, Radius und Quelle."
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de">
       <body>
-        <header className="topbar">
-          <div className="brand">
-            RUWE <span>Bid OS</span>
-          </div>
-          <Nav />
-        </header>
-        <div className="container">{children}</div>
+        <MainNav />
+        <main className="page">
+          <div className="shell">{children}</div>
+        </main>
       </body>
     </html>
   );

@@ -9,7 +9,28 @@ export default async function ForecastPage() {
     <div className="stack">
       <div>
         <h1 className="h1">Forecast</h1>
-        <p className="sub">Welche Geschäftsfelder in welchen Regionen aktuell am attraktivsten wirken.</p>
+        <p className="sub">Welche Geschäftsfelder in welchen Regionen aktuell den stärksten Fokus verdienen.</p>
+      </div>
+
+      <div className="card">
+        <div className="section-title">Management-Empfehlungen</div>
+        <div className="stack" style={{ marginTop: 14 }}>
+          {rows.slice(0, 5).map((row: any) => (
+            <div key={`${row.trade}_${row.region}`} className="card soft">
+              <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                <div className="section-title" style={{ fontSize: 20 }}>
+                  {row.trade} · {row.region}
+                </div>
+                <span className={row.recommendation === "Aktiv fokussieren" ? "badge badge-gut" : "badge badge-gemischt"}>
+                  {row.recommendation}
+                </span>
+              </div>
+              <p className="meta" style={{ marginTop: 12 }}>
+                Treffer: {row.count} · Bid: {row.bids} · Prüfen: {row.reviews} · Volumen: {Math.round(row.volume / 1000)}k €
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="card table-wrap">
