@@ -1,55 +1,37 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 import { fitScore } from "@/lib/scoring";
 
 export default async function TenderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const db = await readDb();
+  const db = await readStore();
   const tender = (db.tenders || []).find((x: any) => x.id === id);
   if (!tender) return notFound();
 
-  const zone = (db.zones || []).find((x: any) => x.id === tender.zoneId);
   const buyer = (db.buyers || []).find((x: any) => x.id === tender.buyerId);
-  const owner = (db.agents || []).find((x: any) => x.id === tender.ownerId);
+  const zone = (db.zones || []).find((x: any) => x.id === tender.zoneId);
   const score = fitScore(tender, zone, buyer);
 
   return (
     <div className="stack">
-      <div>
-        <h1 className="h1">{tender.title}</h1>
-        <p className="sub">Detailansicht mit Fit, Verantwortlichkeit, Buyer, Zone und Entscheidungsstand.</p>
+      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1 className="h1">{tender.title}</h1>
+          <p className="sub">Tender-Detail mit aktuellem Entscheidungsstand.</p>
+        </div>
+        <Link className="button" href={`/tenders/${tender.id}/edit`}>Bearbeiten</Link>
       </div>
 
       <div className="grid grid-4">
-        <div className="card"><div className="label">Region</div><div className="kpi">{tender.region}</div></div>
         <div className="card"><div className="label">Gewerk</div><div className="kpi">{tender.trade}</div></div>
-        <div className="card"><div className="label">Fit Score</div><div className="kpi">{score}</div></div>
         <div className="card"><div className="label">Entscheidung</div><div className="kpi">{tender.decision}</div></div>
+        <div className="card"><div className="label">Distanz</div><div className="kpi">{tender.distanceKm} km</div></div>
+        <div className="card"><div className="label">Fit Score</div><div className="kpi">{score}</div></div>
       </div>
 
-      <div className="grid grid-2">
-        <div className="card">
-          <div className="section-title">Einordnung</div>
-          <div className="stack">
-            <div className="meta">Priorität: {tender.priority}</div>
-            <div className="meta">Manual Review: {tender.manualReview}</div>
-            <div className="meta">Risiko: {tender.riskLevel}</div>
-            <div className="meta">Fit Summary: {tender.fitSummary}</div>
-            <div className="meta">Wert: {tender.estimatedValue.toLocaleString("de-DE")} €</div>
-            <div className="meta">Frist: {tender.dueDate || "-"}</div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Bezüge</div>
-          <div className="stack">
-            <div className="meta">Zone: {zone?.name || "-"}</div>
-            <div className="meta">Buyer: {buyer?.name || "-"}</div>
-            <div className="meta">Owner: {owner?.name || "-"}</div>
-            <div className="meta">Quelle: {tender.sourceType || "-"}</div>
-            <div className="meta">Notiz: {tender.notes || "-"}</div>
-          </div>
-        </div>
+      <div className="card">
+        <pre className="doc">{JSON.stringify(tender, null, 2)}</pre>
       </div>
     </div>
   );

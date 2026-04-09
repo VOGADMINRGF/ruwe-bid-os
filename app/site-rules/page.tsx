@@ -1,7 +1,7 @@
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 
 export default async function SiteRulesPage() {
-  const db = await readDb();
+  const db = await readStore();
   const rules = db.siteTradeRules || [];
   const sites = db.sites || [];
 
@@ -9,27 +9,19 @@ export default async function SiteRulesPage() {
     <div className="stack">
       <div>
         <h1 className="h1">Site Rules</h1>
-        <p className="sub">Manuell steuerbare Radius- und Gewerkelogik pro Standort.</p>
+        <p className="sub">Mongo-first bearbeitbare Regeln je Standort und Gewerk.</p>
       </div>
-      <div className="card table-wrap">
-        <table className="table">
-          <thead><tr><th>Standort</th><th>Gewerk</th><th>Priorität</th><th>Primär</th><th>Sekundär</th><th>Keywords</th></tr></thead>
-          <tbody>
-            {rules.map((r: any) => {
-              const site = sites.find((s: any) => s.id === r.siteId);
-              return (
-                <tr key={r.id}>
-                  <td>{site?.name || "-"}</td>
-                  <td>{r.trade}</td>
-                  <td>{r.priority}</td>
-                  <td>{r.primaryRadiusKm} km</td>
-                  <td>{r.secondaryRadiusKm} km</td>
-                  <td>{(r.keywordsPositive || []).join(", ")}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+      <div className="grid grid-2">
+        {rules.map((rule: any) => {
+          const site = sites.find((s: any) => s.id === rule.siteId);
+          return (
+            <div className="card" key={rule.id}>
+              <div className="section-title">{site?.name || "-"} · {rule.trade}</div>
+              <SiteRuleEditor rule={rule} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

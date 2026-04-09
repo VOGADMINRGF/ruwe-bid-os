@@ -1,17 +1,21 @@
 import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
 
 export default async function SitesPage() {
-  const db = await readDb();
+  const db = await readStore();
   const sites = db.sites || [];
   const rules = db.siteTradeRules || [];
 
   return (
     <div className="stack">
-      <div>
-        <h1 className="h1">Sites</h1>
-        <p className="sub">Offizielle RUWE-Standorte und Gruppengesellschaften mit Radien und Gewerkelogik.</p>
+      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1 className="h1">Sites</h1>
+          <p className="sub">Offizielle RUWE-Standorte und Gruppengesellschaften mit editierbarer Logik.</p>
+        </div>
+        <Link className="button" href="/sites/new">Neuer Standort</Link>
       </div>
+
       <div className="card table-wrap">
         <table className="table">
           <thead>

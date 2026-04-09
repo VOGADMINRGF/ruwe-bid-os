@@ -22,6 +22,8 @@ const COLLECTIONS = [
 type CollectionName = typeof COLLECTIONS[number];
 
 async function ensureMongoSeededFromJson() {
+  if (!hasMongo()) return;
+
   const db = await getMongoDb();
   const existing = await db.collection("meta").countDocuments();
   if (existing > 0) return;
@@ -70,64 +72,75 @@ export async function readStore() {
   for (const name of COLLECTIONS) {
     const docs = await db.collection(name).find({}).toArray();
     if (name === "meta" || name === "config") {
-      result[name] = docs[0] || {};
+      result[name] = docs[0] ? stripMongo(docs[0]) : {};
     } else {
-      result[name] = docs.map(({ _id, ...rest }) => rest);
+      result[name] = docs.map(stripMongo);
     }
   }
   return result;
 }
 
+export async function readCollection(name: CollectionName) {
+  const db = await readStore();
+  return db[name] || [];
+}
+
+export async function readItemById(name: CollectionName, id: string) {
+  const rows = await readCollection(name);
+  return rows.find((x: any) => x.id === id) || null;
+}
+
 export async function replaceCollection(name: CollectionName, rows: any[]) {
   if (!hasMongo()) {
     const json = await readJsonDb();
-    if (name === "meta" || name === "config") {
-      json[name] = rows[0] || {};
-    } else {
-      json[name] = rows;
-    }
+    if (name === "meta" || name === "config") json[name] = rows[0] || {};
+    else json[name] = rows;
     await writeJsonDb(json);
     return;
   }
 
   const db = await getMongoDb();
   await db.collection(name).deleteMany({});
-  if (rows.length) await db.collection(name).insertMany(rows);
+  if (rows.length) await db.collection(name).insertMany(stampRows(rows));
 }
 
 export async function appendToCollection(name: CollectionName, row: any) {
+  const stamped = stampRow(row);
+
   if (!hasMongo()) {
     const json = await readJsonDb();
     if (!Array.isArray(json[name])) json[name] = [];
-    json[name].unshift(row);
+    json[name].unshift(stamped);
     await writeJsonDb(json);
-    return row;
+    return stamped;
   }
 
   const db = await getMongoDb();
-  await db.collection(name).insertOne(row);
-  return row;
+  await db.collection(name).insertOne(stamped);
+  return stamped;
 }
 
 export async function updateById(name: CollectionName, id: string, patch: any) {
+  const stampedPatch = {
+    ...patch,
+    updatedAt: new Date().toISOString()
+  };
+
   if (!hasMongo()) {
     const json = await readJsonDb();
     const list = json[name] || [];
     const idx = list.findIndex((x: any) => x.id === id);
     if (idx === -1) return null;
-    list[idx] = { ...list[idx], ...patch };
+    list[idx] = { ...list[idx], ...stampedPatch };
     json[name] = list;
     await writeJsonDb(json);
     return list[idx];
   }
 
   const db = await getMongoDb();
-  await db.collection(name).updateOne({ id }, { $set: patch });
+  await db.collection(name).updateOne({ id }, { $set: stampedPatch });
   const updated = await db.collection(name).findOne({ id });
-  if (!updated) return null;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { _id, ...rest } = updated;
-  return rest;
+  return updated ? stripMongo(updated) : null;
 }
 
 export async function deleteById(name: CollectionName, id: string) {
@@ -145,4 +158,22 @@ export async function deleteById(name: CollectionName, id: string) {
 
 export function nextId(prefix: string) {
   return createId(prefix);
+}
+
+function stripMongo(doc: any) {
+  if (!doc) return doc;
+  const { _id, ...rest } = doc;
+  return rest;
+}
+
+function stampRow(row: any) {
+  return {
+    createdAt: row.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...row
+  };
+}
+
+function stampRows(rows: any[]) {
+  return rows.map(stampRow);
 }

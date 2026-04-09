@@ -11,6 +11,7 @@
     "migrate:mongo": "node scripts/migrate-json-to-mongo.mjs"
   },
   "dependencies": {
+    "@next/env": "^16.2.3",
     "@prisma/adapter-better-sqlite3": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "axios": "^1.15.0",

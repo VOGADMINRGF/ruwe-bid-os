@@ -1,6 +1,11 @@
+import nextEnv from '@next/env';
 import fs from "fs/promises";
 import path from "path";
 import { MongoClient } from "mongodb";
+
+const { loadEnvConfig } = nextEnv;
+const projectDir = process.cwd();
+loadEnvConfig(projectDir);
 
 const mongoUri = process.env.MONGODB_URI || "";
 const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
@@ -10,8 +15,7 @@ if (!mongoUri) {
   process.exit(0);
 }
 
-const root = process.cwd();
-const file = path.join(root, "data", "db.json");
+const file = path.join(projectDir, "data", "db.json");
 const raw = await fs.readFile(file, "utf8");
 const json = JSON.parse(raw);
 
@@ -34,6 +38,7 @@ for (const area of json.serviceAreas || []) {
     toRefId: area.siteId
   });
 }
+
 for (const tender of json.tenders || []) {
   if (tender.matchedSiteId) {
     graphEdges.push({

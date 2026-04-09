@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { readStore } from "@/lib/storage";
 import { siteTradeOperationalRows } from "@/lib/siteLogic";
+import SiteRuleEditor from "@/components/forms/SiteRuleEditor";
 
 function capacityBadge(status: string) {
   if (status === "voll") return "badge badge-kritisch";
@@ -21,7 +22,7 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
     <div className="stack">
       <div>
         <h1 className="h1">{site.name}</h1>
-        <p className="sub">Standortdetail mit bearbeitbarer Zielstruktur für Gewerk, Radius, Kapazität und verpasste Radiusklasse.</p>
+        <p className="sub">Standortdetail mit bearbeitbaren Regeln für Gewerk, Radius, Kapazität und Keywords.</p>
       </div>
 
       <div className="grid grid-4">
@@ -51,7 +52,6 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
                 <th>Nächste Klasse</th>
                 <th>Manuell prüfen</th>
                 <th>Status</th>
-                <th>Keywords</th>
               </tr>
             </thead>
             <tbody>
@@ -66,12 +66,20 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
                   <td>{row.nextBandCount}</td>
                   <td>{row.nextBandManualCandidates}</td>
                   <td><span className={capacityBadge(row.capacityStatus)}>{row.capacityStatus}</span></td>
-                  <td>{(row.rule.keywordsPositive || []).join(", ")}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="grid grid-2">
+        {rows.map((row: any) => (
+          <div className="card" key={row.rule.id}>
+            <div className="section-title">{row.rule.trade} bearbeiten</div>
+            <SiteRuleEditor rule={row.rule} />
+          </div>
+        ))}
       </div>
     </div>
   );
