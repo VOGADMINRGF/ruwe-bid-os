@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { readStore } from "@/lib/storage";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
 import OpportunityEditor from "@/components/forms/OpportunityEditor";
+import OpportunityLearningForm from "@/components/forms/OpportunityLearningForm";
 
 export default async function OpportunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -62,6 +63,14 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             <OpportunityEditor opportunity={opportunity} agents={agents} />
           </div>
         </div>
+      </div>
+
+      <div className="card">
+        <div className="section-title">Lernfeedback & Parameter</div>
+        <div className="meta" style={{ marginTop: 10, marginBottom: 14 }}>
+          Bestätigte Werte aus realer Bearbeitung können als regionale Lernbasis für künftige Ausschreibungen gespeichert werden.
+        </div>
+        <OpportunityLearningForm opportunity={opportunity} />
       </div>
     </div>
   );

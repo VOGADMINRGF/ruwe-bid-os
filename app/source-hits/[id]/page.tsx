@@ -69,6 +69,11 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
       </div>
 
       <div className="card">
+        <div className="section-title">Extrahierte Spezifikationen</div>
+        <pre style={{ whiteSpace: "pre-wrap", fontSize: 14, marginTop: 14 }}>{JSON.stringify(hit.extractedSpecs || {}, null, 2)}</pre>
+      </div>
+
+      <div className="card">
         <div className="section-title">Rohdaten</div>
         <pre style={{ whiteSpace: "pre-wrap", fontSize: 14, marginTop: 14 }}>{JSON.stringify(hit, null, 2)}</pre>
       </div>

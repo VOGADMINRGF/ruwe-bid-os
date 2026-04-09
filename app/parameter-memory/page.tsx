@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { readStore } from "@/lib/storage";
 
 export default async function ParameterMemoryPage() {
@@ -8,7 +9,7 @@ export default async function ParameterMemoryPage() {
     <div className="stack">
       <div>
         <h1 className="h1"><span className="headline-accent">Parameter</span> & Lernbasis</h1>
-        <p className="sub">Gespeicherte regionale Parameter wie Stundenpreis, Monatsrate, Fahrkosten oder sonstige Kalkulationswerte.</p>
+        <p className="sub">Gespeicherte regionale Parameter wie Stundenpreis, Fahrkosten oder Spezifikationswerte.</p>
       </div>
 
       <div className="card">
@@ -22,7 +23,7 @@ export default async function ParameterMemoryPage() {
                 <th>Key</th>
                 <th>Wert</th>
                 <th>Status</th>
-                <th>Quelle</th>
+                <th>Bearbeiten</th>
               </tr>
             </thead>
             <tbody>
@@ -34,7 +35,7 @@ export default async function ParameterMemoryPage() {
                   <td>{row.parameterKey}</td>
                   <td>{row.value ?? "-"}</td>
                   <td>{row.status}</td>
-                  <td>{row.source || "-"}</td>
+                  <td><Link className="linkish" href={`/parameter-memory/${row.id}`}>Öffnen</Link></td>
                 </tr>
               ))}
             </tbody>
