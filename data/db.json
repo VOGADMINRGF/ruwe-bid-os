@@ -5,7 +5,9 @@
     "lastSeededAt": "2026-04-09T11:20:00.000Z",
     "lastSuccessfulIngestionAt": "2026-04-09T11:05:00.000Z",
     "lastSuccessfulIngestionSource": "TED Search API",
-    "pollingSeconds": 60
+    "pollingSeconds": 60,
+    "dataMode": "demo",
+    "dataValidityNote": "Aktuell Demo-/Smoke-Stand, bis echte Connectoren produktiv laufen."
   },
   "sourceRegistry": [
     {
@@ -17,7 +19,8 @@
       "official": true,
       "authRequired": false,
       "legalUse": "hoch",
-      "notes": "Offizielle Maschinenquelle."
+      "notes": "Offizielle Maschinenquelle.",
+      "dataMode": "demo"
     },
     {
       "id": "src_service_bund",
@@ -28,7 +31,8 @@
       "official": true,
       "authRequired": false,
       "legalUse": "mittel",
-      "notes": "Sekundärer Publikationskanal."
+      "notes": "Sekundärer Publikationskanal.",
+      "dataMode": "demo"
     },
     {
       "id": "src_berlin",
@@ -39,7 +43,8 @@
       "official": true,
       "authRequired": false,
       "legalUse": "mittel",
-      "notes": "Öffentliche Bekanntmachungen / RSS."
+      "notes": "Öffentliche Bekanntmachungen / RSS.",
+      "dataMode": "demo"
     },
     {
       "id": "src_dtvp",
@@ -50,7 +55,8 @@
       "official": true,
       "authRequired": false,
       "legalUse": "vorsicht",
-      "notes": "Erstmal Beobachtungs-/Partnerquelle."
+      "notes": "Erstmal Beobachtungs-/Partnerquelle.",
+      "dataMode": "demo"
     }
   ],
   "sourceStats": [
@@ -63,7 +69,8 @@
       "goLast30Days": 4,
       "errorCountLastRun": 0,
       "duplicateCountLastRun": 1,
-      "lastRunOk": true
+      "lastRunOk": true,
+      "dataMode": "demo"
     },
     {
       "id": "src_service_bund",
@@ -74,7 +81,8 @@
       "goLast30Days": 2,
       "errorCountLastRun": 0,
       "duplicateCountLastRun": 0,
-      "lastRunOk": true
+      "lastRunOk": true,
+      "dataMode": "demo"
     },
     {
       "id": "src_berlin",
@@ -85,7 +93,8 @@
       "goLast30Days": 1,
       "errorCountLastRun": 0,
       "duplicateCountLastRun": 0,
-      "lastRunOk": true
+      "lastRunOk": true,
+      "dataMode": "demo"
     },
     {
       "id": "src_dtvp",
@@ -96,7 +105,8 @@
       "goLast30Days": 0,
       "errorCountLastRun": 1,
       "duplicateCountLastRun": 0,
-      "lastRunOk": false
+      "lastRunOk": false,
+      "dataMode": "demo"
     }
   ],
   "sites": [
@@ -110,7 +120,8 @@
       "active": true,
       "primaryRadiusKm": 18,
       "secondaryRadiusKm": 30,
-      "notes": "Glas- & Gebäudereinigung / Berlin Ost."
+      "notes": "Glas- & Gebäudereinigung / Berlin Ost.",
+      "dataMode": "demo"
     },
     {
       "id": "bh_nordwest",
@@ -122,7 +133,8 @@
       "active": true,
       "primaryRadiusKm": 18,
       "secondaryRadiusKm": 30,
-      "notes": "Berlin West."
+      "notes": "Berlin West.",
+      "dataMode": "demo"
     },
     {
       "id": "bh_mitte",
@@ -134,7 +146,8 @@
       "active": true,
       "primaryRadiusKm": 15,
       "secondaryRadiusKm": 25,
-      "notes": "Hausmeister / Hauswartservice."
+      "notes": "Hausmeister / Hauswartservice.",
+      "dataMode": "demo"
     },
     {
       "id": "bh_suedost",
@@ -146,7 +159,8 @@
       "active": true,
       "primaryRadiusKm": 25,
       "secondaryRadiusKm": 40,
-      "notes": "Südost-Achse."
+      "notes": "Südost-Achse.",
+      "dataMode": "demo"
     },
     {
       "id": "bh_suedwest",
@@ -158,7 +172,8 @@
       "active": true,
       "primaryRadiusKm": 25,
       "secondaryRadiusKm": 40,
-      "notes": "Südwest-Achse."
+      "notes": "Südwest-Achse.",
+      "dataMode": "demo"
     },
     {
       "id": "nl_magdeburg",
@@ -170,7 +185,8 @@
       "active": true,
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 55,
-      "notes": "Wichtiger Suchanker für Sachsen-Anhalt."
+      "notes": "Wichtiger Suchanker für Sachsen-Anhalt.",
+      "dataMode": "demo"
     },
     {
       "id": "nl_schkeuditz",
@@ -182,7 +198,8 @@
       "active": true,
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 60,
-      "notes": "Leipzig / Sachsen Achse."
+      "notes": "Leipzig / Sachsen Achse.",
+      "dataMode": "demo"
     },
     {
       "id": "nl_zeitz",
@@ -194,7 +211,8 @@
       "active": true,
       "primaryRadiusKm": 35,
       "secondaryRadiusKm": 60,
-      "notes": "Zeitz / Südost."
+      "notes": "Zeitz / Südost.",
+      "dataMode": "demo"
     }
   ],
   "serviceAreas": [],
@@ -210,9 +228,14 @@
       "monthlyCapacity": 18,
       "concurrentCapacity": 7,
       "enabled": true,
-      "keywordsPositive": ["gebäudereinigung", "unterhaltsreinigung", "glasreinigung"],
+      "keywordsPositive": [
+        "gebäudereinigung",
+        "unterhaltsreinigung",
+        "glasreinigung"
+      ],
       "keywordsNegative": [],
-      "regionNotes": "Berlin Ost"
+      "regionNotes": "Berlin Ost",
+      "dataMode": "demo"
     },
     {
       "id": "rule_mitte_hausmeister",
@@ -225,9 +248,14 @@
       "monthlyCapacity": 10,
       "concurrentCapacity": 4,
       "enabled": true,
-      "keywordsPositive": ["hausmeister", "hauswart", "objektbetreuung"],
+      "keywordsPositive": [
+        "hausmeister",
+        "hauswart",
+        "objektbetreuung"
+      ],
       "keywordsNegative": [],
-      "regionNotes": "Berlin Mitte"
+      "regionNotes": "Berlin Mitte",
+      "dataMode": "demo"
     },
     {
       "id": "rule_magdeburg_sicherheit",
@@ -240,9 +268,14 @@
       "monthlyCapacity": 8,
       "concurrentCapacity": 3,
       "enabled": true,
-      "keywordsPositive": ["objektschutz", "sicherheitsdienst", "wachschutz"],
+      "keywordsPositive": [
+        "objektschutz",
+        "sicherheitsdienst",
+        "wachschutz"
+      ],
       "keywordsNegative": [],
-      "regionNotes": "Sachsen-Anhalt"
+      "regionNotes": "Sachsen-Anhalt",
+      "dataMode": "demo"
     },
     {
       "id": "rule_schkeuditz_winter",
@@ -255,9 +288,14 @@
       "monthlyCapacity": 6,
       "concurrentCapacity": 2,
       "enabled": true,
-      "keywordsPositive": ["winterdienst", "schnee", "glätte"],
+      "keywordsPositive": [
+        "winterdienst",
+        "schnee",
+        "glätte"
+      ],
       "keywordsNegative": [],
-      "regionNotes": "Leipzig / Sachsen"
+      "regionNotes": "Leipzig / Sachsen",
+      "dataMode": "demo"
     },
     {
       "id": "rule_suedwest_gruen",
@@ -270,9 +308,14 @@
       "monthlyCapacity": 7,
       "concurrentCapacity": 3,
       "enabled": true,
-      "keywordsPositive": ["grünpflege", "landschaftspflege", "baumpflege"],
+      "keywordsPositive": [
+        "grünpflege",
+        "landschaftspflege",
+        "baumpflege"
+      ],
       "keywordsNegative": [],
-      "regionNotes": "Brandenburg Südwest"
+      "regionNotes": "Brandenburg Südwest",
+      "dataMode": "demo"
     }
   ],
   "sourceHits": [
@@ -289,7 +332,8 @@
       "matchedSiteId": "bh_nordost",
       "status": "prefiltered",
       "addedSinceLastFetch": true,
-      "url": "https://ted.europa.eu/"
+      "url": "https://ted.europa.eu/",
+      "dataMode": "demo"
     },
     {
       "id": "hit2",
@@ -304,7 +348,8 @@
       "matchedSiteId": "bh_mitte",
       "status": "manual_review",
       "addedSinceLastFetch": true,
-      "url": "https://ted.europa.eu/"
+      "url": "https://ted.europa.eu/",
+      "dataMode": "demo"
     },
     {
       "id": "hit3",
@@ -319,7 +364,8 @@
       "matchedSiteId": "nl_magdeburg",
       "status": "prefiltered",
       "addedSinceLastFetch": true,
-      "url": "https://service.bund.de/"
+      "url": "https://service.bund.de/",
+      "dataMode": "demo"
     },
     {
       "id": "hit4",
@@ -334,7 +380,8 @@
       "matchedSiteId": "nl_schkeuditz",
       "status": "prefiltered",
       "addedSinceLastFetch": true,
-      "url": "https://service.bund.de/"
+      "url": "https://service.bund.de/",
+      "dataMode": "demo"
     },
     {
       "id": "hit5",
@@ -349,7 +396,8 @@
       "matchedSiteId": "bh_suedwest",
       "status": "prefiltered",
       "addedSinceLastFetch": true,
-      "url": "https://www.berlin.de/vergabeplattform/"
+      "url": "https://www.berlin.de/vergabeplattform/",
+      "dataMode": "demo"
     },
     {
       "id": "hit6",
@@ -364,7 +412,8 @@
       "matchedSiteId": "bh_nordost",
       "status": "observed",
       "addedSinceLastFetch": true,
-      "url": "https://ted.europa.eu/"
+      "url": "https://ted.europa.eu/",
+      "dataMode": "demo"
     },
     {
       "id": "hit7",
@@ -379,7 +428,8 @@
       "matchedSiteId": "nl_magdeburg",
       "status": "observed",
       "addedSinceLastFetch": false,
-      "url": "https://service.bund.de/"
+      "url": "https://service.bund.de/",
+      "dataMode": "demo"
     },
     {
       "id": "hit8",
@@ -394,7 +444,8 @@
       "matchedSiteId": "bh_mitte",
       "status": "manual_review",
       "addedSinceLastFetch": false,
-      "url": "https://www.berlin.de/vergabeplattform/"
+      "url": "https://www.berlin.de/vergabeplattform/",
+      "dataMode": "demo"
     },
     {
       "id": "hit9",
@@ -409,7 +460,8 @@
       "matchedSiteId": "bh_suedost",
       "status": "observed",
       "addedSinceLastFetch": true,
-      "url": "https://www.dtvp.de/"
+      "url": "https://www.dtvp.de/",
+      "dataMode": "demo"
     },
     {
       "id": "hit10",
@@ -424,7 +476,8 @@
       "matchedSiteId": "nl_zeitz",
       "status": "prefiltered",
       "addedSinceLastFetch": true,
-      "url": "https://ted.europa.eu/"
+      "url": "https://ted.europa.eu/",
+      "dataMode": "demo"
     },
     {
       "id": "hit11",
@@ -439,7 +492,8 @@
       "matchedSiteId": "bh_suedwest",
       "status": "manual_review",
       "addedSinceLastFetch": true,
-      "url": "https://service.bund.de/"
+      "url": "https://service.bund.de/",
+      "dataMode": "demo"
     }
   ],
   "buyers": [],
