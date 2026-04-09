@@ -1,10 +1,5 @@
-type ProviderResult = {
-  provider: string;
-  raw: string;
-};
-
 function extractJson(text: string) {
-  const trimmed = text.trim();
+  const trimmed = (text || "").trim();
   try {
     return JSON.parse(trimmed);
   } catch {}
@@ -12,10 +7,24 @@ function extractJson(text: string) {
   const start = trimmed.indexOf("{");
   const end = trimmed.lastIndexOf("}");
   if (start >= 0 && end > start) {
-    const sliced = trimmed.slice(start, end + 1);
-    return JSON.parse(sliced);
+    return JSON.parse(trimmed.slice(start, end + 1));
   }
   throw new Error("No JSON found in model response");
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function analyzeWithOpenAI(prompt: string) {
@@ -23,7 +32,9 @@ export async function analyzeWithOpenAI(prompt: string) {
   const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   if (!apiKey) throw new Error("OPENAI_API_KEY missing");
 
-  const res = await fetch("https://api.openai.com/v1/responses", {
+  console.log("[AI] OpenAI request start", { model });
+
+  const res = await fetchWithTimeout("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -33,18 +44,20 @@ export async function analyzeWithOpenAI(prompt: string) {
       model,
       input: prompt
     })
-  });
+  }, 30000);
 
+  const txt = await res.text();
   if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`OpenAI error: ${res.status} ${txt}`);
+    throw new Error(`OpenAI error ${res.status}: ${txt}`);
   }
 
-  const json = await res.json();
+  const json = JSON.parse(txt);
   const text =
     json.output_text ||
     json.output?.map((x: any) => x?.content?.map((c: any) => c?.text).join(" ")).join(" ") ||
     "";
+
+  console.log("[AI] OpenAI request done");
 
   return {
     provider: `openai:${model}`,
@@ -57,7 +70,9 @@ export async function analyzeWithAnthropic(prompt: string) {
   const model = process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-latest";
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY missing");
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  console.log("[AI] Anthropic request start", { model });
+
+  const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -67,24 +82,19 @@ export async function analyzeWithAnthropic(prompt: string) {
     body: JSON.stringify({
       model,
       max_tokens: 900,
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ]
+      messages: [{ role: "user", content: prompt }]
     })
-  });
+  }, 30000);
 
+  const txt = await res.text();
   if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Anthropic error: ${res.status} ${txt}`);
+    throw new Error(`Anthropic error ${res.status}: ${txt}`);
   }
 
-  const json = await res.json();
-  const text = (json.content || [])
-    .map((c: any) => c?.text || "")
-    .join("\n");
+  const json = JSON.parse(txt);
+  const text = (json.content || []).map((c: any) => c?.text || "").join("\n");
+
+  console.log("[AI] Anthropic request done");
 
   return {
     provider: `anthropic:${model}`,
@@ -96,10 +106,16 @@ export async function analyzeWithAvailableProvider(prompt: string) {
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
   const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
 
+  console.log("[AI] Providers", {
+    openai: hasOpenAI,
+    anthropic: hasAnthropic
+  });
+
   if (hasOpenAI) {
     try {
       return await analyzeWithOpenAI(prompt);
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[AI] OpenAI failed:", err?.message || err);
       if (!hasAnthropic) throw err;
     }
   }
