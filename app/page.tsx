@@ -2,9 +2,10 @@ import Link from "next/link";
 import { readStore } from "@/lib/storage";
 import { formatDateTime, modeLabel, modeBadgeClass } from "@/lib/format";
 import { aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
-import { topDeadlineStats, topForecastCards, sourcePerformanceRows, pipelineStageSummary } from "@/lib/dashboardLogic";
+import { topDeadlineStats, topForecastCards, sourcePerformanceRows } from "@/lib/dashboardLogic";
 import { portfolioSummary, highAttentionCases, missingCoverageCases, longRunningCases, managementNarrative } from "@/lib/managementMetrics";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
+import { pipelineStageBuckets } from "@/lib/pipelineFilters";
 
 function DecisionCard({ href, label, value, sub }: { href: string; label: string; value: string; sub: string }) {
   return (
@@ -24,13 +25,26 @@ export default async function DashboardPage() {
   const forecastCards = topForecastCards(db);
   const sourceRows = sourcePerformanceRows(db);
   const grouped = aggregateHitsByRegionAndTrade(hits).slice(0, 10);
-  const stages = pipelineStageSummary(db);
   const portfolio = portfolioSummary(db);
   const narrative = managementNarrative(db);
   const highAttention = highAttentionCases(db);
   const longRun = longRunningCases(db);
   const gaps = missingCoverageCases(db);
+  const stageRows = pipelineStageBuckets(db.pipeline || []);
   const mode = meta.dataMode || "live";
+
+  const stageTop5 = [
+    ...stageRows,
+    {
+      stage: "Verloren / No-Bid",
+      count: (db.pipeline || []).filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage)).length,
+      value: (db.pipeline || [])
+        .filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage))
+        .reduce((s: number, x: any) => s + Number(x.value || 0), 0)
+    }
+  ]
+    .filter((x: any) => x.count > 0)
+    .slice(0, 5);
 
   return (
     <div className="stack">
@@ -54,8 +68,7 @@ export default async function DashboardPage() {
             <div className="toolbar" style={{ marginTop: 8 }}>
               <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
               <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
-              <Link className="button-secondary" href="/dashboard/forecast">Forecast</Link>
-              <Link className="button-secondary" href="/dashboard/deadlines">Fristen</Link>
+              <Link className="button-secondary" href="/pipeline?window=7d">Fristen jetzt</Link>
             </div>
           </div>
 
@@ -65,6 +78,9 @@ export default async function DashboardPage() {
             <p className="meta">{narrative.second}</p>
             <p className="meta">{narrative.third}</p>
             <p className="meta">{narrative.fourth}</p>
+            <p className="meta" style={{ marginTop: 12 }}>
+              KI-Setup: GPT als Primär-Orchestrator, Claude als Tiefenanalyse und Second Opinion.
+            </p>
           </div>
         </div>
       </section>
@@ -73,7 +89,7 @@ export default async function DashboardPage() {
         <DecisionCard href="/source-hits" label="Ausschreibungsvolumen" value={formatCurrencyCompact(portfolio.totalVolume)} sub={`${portfolio.totalCount} Treffer`} />
         <DecisionCard href="/source-hits?decision=Bid" label="Empfohlen" value={formatCurrencyCompact(portfolio.bidVolume)} sub={`${portfolio.bidCount} Kandidaten`} />
         <DecisionCard href="/source-hits?decision=Prüfen" label="Manuell prüfen" value={formatCurrencyCompact(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
-        <DecisionCard href="/source-hits?decision=No-Go" label="No-Bid / Beobachten" value={formatCurrencyCompact(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} derzeit nicht priorisiert`} />
+        <DecisionCard href="/source-hits?decision=No-Go" label="No-Bid / Beobachten" value={formatCurrencyCompact(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} nicht priorisiert`} />
         <DecisionCard href="/pipeline?window=7d" label="Fristen 7 Tage" value={`${deadlines.due7}`} sub="sofort handeln" />
         <DecisionCard href="/sites" label="Standorte / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="aktive Abdeckung" />
       </section>
@@ -147,10 +163,10 @@ export default async function DashboardPage() {
       <section className="card">
         <div className="section-title">Pipeline-Steuerung</div>
         <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-          Stages und Volumen im Überblick.
+          Stages, Volumen und verlorene Chancen im Überblick.
         </div>
-        <div className="stage-board">
-          {stages.map((stage: any) => (
+        <div className="stage-board-5">
+          {stageTop5.map((stage: any) => (
             <div key={stage.stage} className="stage-card">
               <div className="label">{stage.stage}</div>
               <div className="stage-count">{stage.count}</div>
@@ -175,7 +191,7 @@ export default async function DashboardPage() {
                   <th>Quellen</th>
                   <th>Anzahl</th>
                   <th>Volumen</th>
-                  <th>Laufzeit Ø</th>
+                  <th>Laufzeit</th>
                 </tr>
               </thead>
               <tbody>

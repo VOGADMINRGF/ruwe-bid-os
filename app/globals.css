@@ -220,7 +220,7 @@ a{color:inherit;text-decoration:none}
 }
 
 .kpi-compact{
-  font-size: 40px;
+  font-size: 34px;
   line-height: 1.05;
   font-weight: 850;
   margin-top: 8px;
@@ -255,4 +255,19 @@ a{color:inherit;text-decoration:none}
   flex-wrap:wrap;
   align-items:center;
   margin-bottom:14px;
+}
+
+
+.stage-board-5{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:16px;
+}
+
+@media (max-width: 1200px){
+  .stage-board-5{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media (max-width: 780px){
+  .stage-board-5{grid-template-columns:1fr}
 }

@@ -111,7 +111,7 @@ async function writeJsonFile(db: StoreShape) {
   await fs.writeFile(DATA_FILE, JSON.stringify(normalizeStore(db), null, 2) + "\n", "utf8");
 }
 
-async function getMongoClientAndDb() {
+async function getMongoConn() {
   const uri = process.env.MONGODB_URI;
   if (!uri) return null;
   const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
@@ -121,18 +121,18 @@ async function getMongoClientAndDb() {
 }
 
 async function readMongoStore(): Promise<StoreShape | null> {
-  const conn = await getMongoClientAndDb();
+  const conn = await getMongoConn();
   if (!conn) return null;
 
   try {
-    const collections: StoreCollection[] = [
+    const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
       "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
     const out: any = {};
-    for (const name of collections) {
+    for (const name of names) {
       const rows = await conn.db.collection(name).find({}).toArray();
       if (name === "meta" || name === "config" || name === "globalKeywords") {
         out[name] = rows[0] || (name === "globalKeywords" ? { positive: [], negative: [] } : {});
@@ -148,18 +148,25 @@ async function readMongoStore(): Promise<StoreShape | null> {
   }
 }
 
+function asInsertDocs(value: any): any[] {
+  if (Array.isArray(value)) {
+    return value.filter((x) => x && typeof x === "object" && !Array.isArray(x));
+  }
+  if (value && typeof value === "object") return [value];
+  return [];
+}
+
 async function replaceMongoCollection(name: StoreCollection, value: any) {
-  const conn = await getMongoClientAndDb();
+  const conn = await getMongoConn();
   if (!conn) return false;
 
   try {
     const col = conn.db.collection(name);
     await col.deleteMany({});
 
-    if (name === "meta" || name === "config" || name === "globalKeywords") {
-      if (value && typeof value === "object") await col.insertOne(value);
-    } else if (Array.isArray(value) && value.length) {
-      await col.insertMany(value);
+    const docs = asInsertDocs(value);
+    if (docs.length > 0) {
+      await col.insertMany(docs);
     }
     return true;
   } finally {
@@ -182,7 +189,7 @@ export async function replaceCollection(name: StoreCollection, value: any) {
 
   const db = await readJsonFile();
   if (name === "meta" || name === "config" || name === "globalKeywords") {
-    db[name] = value;
+    db[name] = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   } else {
     db[name] = Array.isArray(value) ? value : [];
   }
@@ -191,7 +198,7 @@ export async function replaceCollection(name: StoreCollection, value: any) {
 
 export async function appendToCollection(name: StoreCollection, row: any) {
   if (name === "meta" || name === "config" || name === "globalKeywords") {
-    throw new Error(`appendToCollection is not supported for singleton collection: ${name}`);
+    throw new Error(`appendToCollection not supported for singleton: ${name}`);
   }
   const db = await readStore();
   const current = Array.isArray(db[name]) ? db[name] : [];
@@ -202,50 +209,46 @@ export async function appendToCollection(name: StoreCollection, row: any) {
 
 export async function readItemById(name: StoreCollection, id: string) {
   const db = await readStore();
-  const current = db[name];
-  if (!Array.isArray(current)) return null;
-  return current.find((x: any) => x?.id === id) || null;
+  const rows = db[name];
+  if (!Array.isArray(rows)) return null;
+  return rows.find((x: any) => x?.id === id) || null;
 }
 
 export async function updateById(name: StoreCollection, id: string, patch: any) {
   if (name === "meta" || name === "config" || name === "globalKeywords") {
-    throw new Error(`updateById is not supported for singleton collection: ${name}`);
+    throw new Error(`updateById not supported for singleton: ${name}`);
   }
   const db = await readStore();
-  const current = Array.isArray(db[name]) ? db[name] : [];
-  const idx = current.findIndex((x: any) => x?.id === id);
-  if (idx === -1) return null;
+  const rows = Array.isArray(db[name]) ? db[name] : [];
+  const i = rows.findIndex((x: any) => x?.id === id);
+  if (i === -1) return null;
 
-  const updated = {
-    ...current[idx],
-    ...patch,
-    id
-  };
-  const next = [...current];
-  next[idx] = updated;
+  const updated = { ...rows[i], ...patch, id };
+  const next = [...rows];
+  next[i] = updated;
   await replaceCollection(name, next);
   return updated;
 }
 
 export async function deleteById(name: StoreCollection, id: string) {
   if (name === "meta" || name === "config" || name === "globalKeywords") {
-    throw new Error(`deleteById is not supported for singleton collection: ${name}`);
+    throw new Error(`deleteById not supported for singleton: ${name}`);
   }
   const db = await readStore();
-  const current = Array.isArray(db[name]) ? db[name] : [];
-  const next = current.filter((x: any) => x?.id !== id);
+  const rows = Array.isArray(db[name]) ? db[name] : [];
+  const next = rows.filter((x: any) => x?.id !== id);
   await replaceCollection(name, next);
   return { ok: true };
 }
 
 export async function writeDb(next: StoreShape) {
-  const collections: StoreCollection[] = [
+  const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
     "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
-  for (const key of collections) {
-    await replaceCollection(key, next[key]);
+  for (const name of names) {
+    await replaceCollection(name, next[name]);
   }
 }
 
