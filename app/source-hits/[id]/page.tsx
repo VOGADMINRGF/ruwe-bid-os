@@ -30,6 +30,9 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
             <div className="meta">Laufzeit: {hit.durationMonths ? `${hit.durationMonths} Monate` : "-"}</div>
             <div className="meta">AI: {hit.aiRecommendation || hit.status || "-"}</div>
             <div className="meta">AI-Begründung: {hit.aiReason || "-"}</div>
+            <div className="meta">AI Provider: {hit.aiProvider || "-"}</div>
+            <div className="meta">Primärprovider: {hit.aiPrimaryProvider || "-"}</div>
+            <div className="meta">Zweitprovider: {hit.aiSecondaryProvider || "-"}</div>
             <div className="meta">Confidence: {hit.aiConfidence ?? "-"}</div>
             <div className="meta">Standortmatch: {hit.matchedSiteId || "-"}</div>
             <div className="meta">Distanz: {hit.distanceKm ?? "-"} km</div>
