@@ -2,6 +2,9 @@ import Link from "next/link";
 
 const items = [
   ["/", "Dashboard"],
+  ["/sources", "Sources"],
+  ["/dashboard/monitoring", "Monitoring"],
+  ["/dashboard/source-tests", "Source Tests"],
   ["/sites", "Sites"],
   ["/service-areas", "Service Areas"],
   ["/site-rules", "Site Rules"],
@@ -9,7 +12,6 @@ const items = [
   ["/tenders", "Tenders"],
   ["/pipeline", "Pipeline"],
   ["/agents", "Agents"],
-  ["/zones", "Zones"],
   ["/buyers", "Buyers"],
   ["/references", "References"],
   ["/config", "Config"]

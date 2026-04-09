@@ -1,32 +1,23 @@
 # OpenTasks
 
 ## P2 Operational Core
-- [ ] CRUD UI für Sites
-- [ ] CRUD UI für Site Rules
-- [ ] CRUD UI für Keywords
-- [ ] CRUD UI für Service Areas
-- [ ] Filter nach Standort / Gewerk / Radiusband / Quelle / Status
-- [ ] Tender-Status direkt aus UI ändern
+- [ ] Betriebshof-Modell weiter schärfen
+- [ ] Filter nach Quelle / Standort / Gewerk / Status
+- [ ] Source Registry editierbar machen
 
 ## P3 Intelligence
-- [ ] Explainability je Tender
-- [ ] Radiusampel primär/sekundär/tertiär
-- [ ] Kapazitätswarnungen visualisieren
-- [ ] automatische Vorschläge für Radiuserweiterung
-- [ ] Keyword-Effektivität je Standort/Gewerk
+- [ ] Nutzen-Score je Quelle verfeinern
+- [ ] Explainability für Vorfilterung je Tender
 
 ## P4 Ingestion
-- [ ] echter Abruf TED
-- [ ] echter Abruf Bund.de
-- [ ] echter Abruf DTVP
-- [ ] Import Review Queue
-- [ ] Dubletten-Engine
-- [ ] Quellen-Nutzwert automatisch berechnen
+- [ ] echter TED Connector
+- [ ] echter service.bund Connector
+- [ ] Berliner RSS / Bekanntmachungsconnector
+- [ ] DTVP nur mit sauberem Partner-/Portalansatz
+- [ ] Source Test automatisieren
 
 ## P5 Production
 - [ ] Rollenmodell
 - [ ] Audit Log
 - [ ] Scheduler
 - [ ] Reporting / Export
-- [ ] produktive Formularoberflächen
-- [ ] Persistenz-Härtung
