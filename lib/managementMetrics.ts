@@ -15,6 +15,13 @@ function sumVolume(rows: any[]) {
   return rows.reduce((s, x) => s + n(x?.estimatedValue), 0);
 }
 
+function compactVolumeText(value: number) {
+  const v = n(value);
+  if (v >= 1000000) return `${(v / 1000000).toFixed(2).replace(/0$/, "").replace(/\.00$/, "")} Mio. €`;
+  if (v >= 1000) return `${(v / 1000).toFixed(0)} Tsd. €`;
+  return `${v.toFixed(0)} €`;
+}
+
 export function portfolioSummary(db: any) {
   const hits = db?.sourceHits || [];
   const bid = hits.filter((x: any) => decisionOf(x) === "Bid");
@@ -103,12 +110,12 @@ export function managementNarrative(db: any) {
 
   const lead =
     p.bidVolume > 0
-      ? `Aktuell sind rund ${Math.round(p.bidVolume / 1000)}k € als aktive Bid-Chance einzuordnen.`
+      ? `Aktuell sind rund ${compactVolumeText(p.bidVolume)} als aktive Bid-Chance einzuordnen.`
       : "Aktuell ist noch kein belastbares Bid-Volumen sichtbar.";
 
   const second =
     highVol
-      ? `Größter sichtbarer Fall: ${highVol.trade || "Sonstiges"} in ${highVol.region || "Unbekannt"} mit rund ${Math.round(n(highVol.estimatedValue) / 1000)}k €.`
+      ? `Größter sichtbarer Fall: ${highVol.trade || "Sonstiges"} in ${highVol.region || "Unbekannt"} mit rund ${compactVolumeText(n(highVol.estimatedValue))}.`
       : "Noch kein größter Fall ableitbar.";
 
   const third =

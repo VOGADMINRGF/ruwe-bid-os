@@ -33,18 +33,19 @@ export default async function DashboardPage() {
   const stageRows = pipelineStageBuckets(db.pipeline || []);
   const mode = meta.dataMode || "live";
 
+  const stageMap = new Map(stageRows.map((x: any) => [x.stage, x]));
+  const lostCount = (db.pipeline || []).filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage)).length;
+  const lostValue = (db.pipeline || [])
+    .filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage))
+    .reduce((s: number, x: any) => s + Number(x.value || 0), 0);
+
   const stageTop5 = [
-    ...stageRows,
-    {
-      stage: "Verloren / No-Bid",
-      count: (db.pipeline || []).filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage)).length,
-      value: (db.pipeline || [])
-        .filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage))
-        .reduce((s: number, x: any) => s + Number(x.value || 0), 0)
-    }
-  ]
-    .filter((x: any) => x.count > 0)
-    .slice(0, 5);
+    stageMap.get("Qualifiziert") || { stage: "Qualifiziert", count: 0, value: 0 },
+    stageMap.get("Review") || { stage: "Review", count: 0, value: 0 },
+    stageMap.get("Freigabe intern") || { stage: "Freigabe intern", count: 0, value: 0 },
+    stageMap.get("Angebot") || { stage: "Angebot", count: 0, value: 0 },
+    { stage: "Verloren / No-Bid", count: lostCount, value: lostValue }
+  ];
 
   return (
     <div className="stack">
@@ -115,7 +116,7 @@ export default async function DashboardPage() {
               <tbody>
                 {forecastCards.map((row: any) => (
                   <tr key={`${row.trade}_${row.region}`}>
-                    <td>{row.trade}</td>
+                    <td><Link className="linkish" href={`/source-hits?trade=${encodeURIComponent(row.trade)}&region=${encodeURIComponent(row.region)}`}>{row.trade}</Link></td>
                     <td>{row.region}</td>
                     <td>{row.count}</td>
                     <td>{formatCurrencyCompact(row.volume)}</td>
@@ -147,7 +148,7 @@ export default async function DashboardPage() {
               <tbody>
                 {sourceRows.slice(0, 6).map((row: any) => (
                   <tr key={row.id}>
-                    <td>{row.name}</td>
+                    <td><Link className="linkish" href={`/source-hits?q=${encodeURIComponent(row.name)}`}>{row.name}</Link></td>
                     <td>{formatDateTime(row.lastFetchAt)}</td>
                     <td>{row.tendersSinceLastFetch}</td>
                     <td>{row.goLast30Days}</td>
@@ -167,11 +168,11 @@ export default async function DashboardPage() {
         </div>
         <div className="stage-board-5">
           {stageTop5.map((stage: any) => (
-            <div key={stage.stage} className="stage-card">
+            <Link key={stage.stage} href={stage.stage === "Verloren / No-Bid" ? "/pipeline?window=lost" : `/pipeline?stage=${encodeURIComponent(stage.stage)}`} className="stage-card">
               <div className="label">{stage.stage}</div>
               <div className="stage-count">{stage.count}</div>
               <div className="stage-value">{formatCurrencyCompact(stage.value)}</div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -198,7 +199,7 @@ export default async function DashboardPage() {
                 {grouped.map((row: any) => (
                   <tr key={`${row.region}_${row.trade}`}>
                     <td>{row.region}</td>
-                    <td>{row.trade}</td>
+                    <td><Link className="linkish" href={`/source-hits?trade=${encodeURIComponent(row.trade)}&region=${encodeURIComponent(row.region)}`}>{row.trade}</Link></td>
                     <td>{row.sources}</td>
                     <td>{row.count}</td>
                     <td>{formatCurrencyCompact(row.volume)}</td>
@@ -216,24 +217,24 @@ export default async function DashboardPage() {
             Die wichtigsten unmittelbaren Arbeitsfelder.
           </div>
           <div className="stack">
-            <div className="card soft">
+            <Link href="/pipeline?window=7d" className="card soft">
               <div className="label">Fristen</div>
               <div className="meta" style={{ marginTop: 10 }}>
                 {deadlines.due7} Chancen laufen innerhalb von 7 Tagen ab.
               </div>
-            </div>
-            <div className="card soft">
+            </Link>
+            <Link href="/source-hits?decision=Prüfen" className="card soft">
               <div className="label">Reviews</div>
               <div className="meta" style={{ marginTop: 10 }}>
                 {portfolio.reviewCount} Treffer benötigen manuelle Entscheidung.
               </div>
-            </div>
-            <div className="card soft">
+            </Link>
+            <Link href="/source-hits?decision=No-Go" className="card soft">
               <div className="label">Abdeckung</div>
               <div className="meta" style={{ marginTop: 10 }}>
                 {gaps.length} Fälle zeigen aktuell Lücken bei Standort, Gewerk oder Radius.
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -257,7 +258,7 @@ export default async function DashboardPage() {
               <tbody>
                 {highAttention.map((row: any) => (
                   <tr key={row.id}>
-                    <td>{row.title}</td>
+                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
                     <td>{row.region || "-"}</td>
                     <td>{row.trade || "-"}</td>
                     <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
@@ -286,7 +287,7 @@ export default async function DashboardPage() {
               <tbody>
                 {longRun.map((row: any) => (
                   <tr key={row.id}>
-                    <td>{row.title}</td>
+                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
                     <td>{row.region || "-"}</td>
                     <td>{row.trade || "-"}</td>
                     <td>{row.durationMonths || "-"} Mon.</td>
@@ -315,7 +316,7 @@ export default async function DashboardPage() {
               <tbody>
                 {gaps.map((row: any) => (
                   <tr key={row.id}>
-                    <td>{row.title}</td>
+                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
                     <td>{row.region || "-"}</td>
                     <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
                     <td>{row.gapReason}</td>
