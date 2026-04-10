@@ -24,17 +24,43 @@ export async function upsertParameterMemory(entry: any) {
 }
 
 
-export async function findParameter(input: {
-  type: string;
-  region?: string | null;
-  trade?: string | null;
-}) {
+
+export async function findParameter(
+  arg1: any,
+  arg2?: any,
+  arg3?: any,
+  arg4?: any
+) {
   const rows = await listParameterMemory();
+
+  let input: {
+    region?: string | null;
+    trade?: string | null;
+    type: string;
+    key?: string | null;
+  };
+
+  if (typeof arg1 === "object" && arg1 !== null && !Array.isArray(arg1)) {
+    input = {
+      type: arg1.type,
+      region: arg1.region ?? null,
+      trade: arg1.trade ?? null,
+      key: arg1.key ?? arg1.parameterKey ?? null
+    };
+  } else {
+    input = {
+      region: arg1 ?? null,
+      trade: arg2 ?? null,
+      type: arg3,
+      key: arg4 ?? null
+    };
+  }
 
   const exact = rows.find((x: any) =>
     x?.type === input.type &&
     (input.region ? x?.region === input.region : true) &&
     (input.trade ? x?.trade === input.trade : true) &&
+    (input.key ? (x?.key === input.key || x?.parameterKey === input.key) : true) &&
     x?.status === "defined"
   );
   if (exact) return toPlain(exact);
@@ -42,6 +68,7 @@ export async function findParameter(input: {
   const byTradeOnly = rows.find((x: any) =>
     x?.type === input.type &&
     (input.trade ? x?.trade === input.trade : true) &&
+    (input.key ? (x?.key === input.key || x?.parameterKey === input.key) : true) &&
     (!x?.region) &&
     x?.status === "defined"
   );
@@ -50,6 +77,7 @@ export async function findParameter(input: {
   const byRegionOnly = rows.find((x: any) =>
     x?.type === input.type &&
     (input.region ? x?.region === input.region : true) &&
+    (input.key ? (x?.key === input.key || x?.parameterKey === input.key) : true) &&
     (!x?.trade) &&
     x?.status === "defined"
   );
@@ -57,6 +85,7 @@ export async function findParameter(input: {
 
   const globalDefault = rows.find((x: any) =>
     x?.type === input.type &&
+    (input.key ? (x?.key === input.key || x?.parameterKey === input.key) : true) &&
     (!x?.region) &&
     (!x?.trade) &&
     x?.status === "defined"
