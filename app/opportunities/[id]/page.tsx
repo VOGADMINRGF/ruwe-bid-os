@@ -3,6 +3,7 @@ import { getOpportunityDetail } from "@/lib/opportunityDetail";
 import { buildProposalWorkbench } from "@/lib/proposalWorkbench";
 import OpportunityStatusForm from "@/components/forms/OpportunityStatusForm";
 import OpportunityNoteForm from "@/components/forms/OpportunityNoteForm";
+import OpportunityOverrideForm from "@/components/forms/OpportunityOverrideForm";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
 
 export default async function OpportunityDetailPage({
@@ -65,11 +66,14 @@ export default async function OpportunityDetailPage({
           <div className="meta">Beantwortet: {workbench?.metrics?.answeredVariables}</div>
           <div className="meta">Parameter vorhanden: {workbench?.metrics?.parameterCount}</div>
           <div className="meta">Direktlink valide: {workbench?.metrics?.directLinkValid ? "ja" : "nein"}</div>
+          <div className="meta">Fit-Score: {opp.fitScore ?? "-"}</div>
+          <div className="meta">Fit-Einschätzung: {opp.fitReasonShort || "-"}</div>
         </div>
       </div>
 
-      <div className="grid grid-2">
+      <div className="grid grid-3">
         <OpportunityStatusForm id={opp.id} currentStage={opp.stage} currentDecision={opp.decision} />
+        <OpportunityOverrideForm id={opp.id} currentDecision={opp.decision} />
         <OpportunityNoteForm id={opp.id} />
       </div>
 
