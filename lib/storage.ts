@@ -108,11 +108,6 @@ function normalizeStore(db: any): StoreShape {
     buyers: Array.isArray(db?.buyers) ? db.buyers : [],
     agents: Array.isArray(db?.agents) ? db.agents : [],
     agentKeywords: Array.isArray(db?.agentKeywords) ? db.agentKeywords : [],
-    costModels: Array.isArray(db?.costModels) ? db.costModels : [],
-    costGaps: Array.isArray(db?.costGaps) ? db.costGaps : [],
-    parameterMemory: Array.isArray(db?.parameterMemory) ? db.parameterMemory : [],
-    opportunities: Array.isArray(db?.opportunities) ? db.opportunities : [],
-    queryHistory: Array.isArray(db?.queryHistory) ? db.queryHistory : [],
     globalKeywords:
       db?.globalKeywords && typeof db.globalKeywords === "object" && !Array.isArray(db.globalKeywords)
         ? {
@@ -121,6 +116,15 @@ function normalizeStore(db: any): StoreShape {
             ...db.globalKeywords
           }
         : { positive: [], negative: [] },
+    costModels: Array.isArray(db?.costModels) ? db.costModels : [],
+    costGaps: Array.isArray(db?.costGaps) ? db.costGaps : [],
+    parameterMemory: Array.isArray(db?.parameterMemory) ? db.parameterMemory : [],
+    opportunities: Array.isArray(db?.opportunities) ? db.opportunities : [],
+    queryHistory: Array.isArray(db?.queryHistory) ? db.queryHistory : [],
+    queryConfig: Array.isArray(db?.queryConfig) ? db.queryConfig : [],
+    forecastSnapshots: Array.isArray(db?.forecastSnapshots) ? db.forecastSnapshots : [],
+    connectors: Array.isArray(db?.connectors) ? db.connectors : [],
+    reviewTrail: Array.isArray(db?.reviewTrail) ? db.reviewTrail : [],
     tenders: Array.isArray(db?.tenders) ? db.tenders : [],
     pipeline: Array.isArray(db?.pipeline) ? db.pipeline : [],
     references: Array.isArray(db?.references) ? db.references : [],
@@ -152,19 +156,42 @@ async function getMongoConn() {
   return { client, db: client.db(dbName) };
 }
 
+const ALL_COLLECTIONS: StoreCollection[] = [
+  "meta",
+  "config",
+  "sourceRegistry",
+  "sourceStats",
+  "sourceHits",
+  "sites",
+  "serviceAreas",
+  "siteTradeRules",
+  "buyers",
+  "agents",
+  "agentKeywords",
+  "globalKeywords",
+  "costModels",
+  "costGaps",
+  "parameterMemory",
+  "opportunities",
+  "queryHistory",
+  "queryConfig",
+  "forecastSnapshots",
+  "connectors",
+  "reviewTrail",
+  "tenders",
+  "pipeline",
+  "references",
+  "graphNodes",
+  "graphEdges"
+];
+
 async function readMongoStore(): Promise<StoreShape | null> {
   const conn = await getMongoConn();
   if (!conn) return null;
 
   try {
-    const names: StoreCollection[] = [
-      "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","connectors","reviewTrail","tenders",
-      "pipeline","references","graphNodes","graphEdges"
-    ];
-
     const out: any = {};
-    for (const name of names) {
+    for (const name of ALL_COLLECTIONS) {
       const rows = await conn.db.collection(name).find({}).toArray();
       if (name === "meta" || name === "config" || name === "globalKeywords") {
         out[name] = rows[0] || (name === "globalKeywords" ? { positive: [], negative: [] } : {});
@@ -220,11 +247,13 @@ export async function replaceCollection(name: StoreCollection, value: any) {
   if (mongoOk) return;
 
   const db = await readJsonFile();
+
   if (name === "meta" || name === "config" || name === "globalKeywords") {
     db[name] = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   } else {
     db[name] = Array.isArray(value) ? value : [];
   }
+
   await writeJsonFile(db);
 }
 
@@ -250,6 +279,7 @@ export async function updateById(name: StoreCollection, id: string, patch: any) 
   if (name === "meta" || name === "config" || name === "globalKeywords") {
     throw new Error(`updateById not supported for singleton: ${name}`);
   }
+
   const db = await readStore();
   const rows = Array.isArray(db[name]) ? db[name] : [];
   const i = rows.findIndex((x: any) => x?.id === id);
@@ -266,6 +296,7 @@ export async function deleteById(name: StoreCollection, id: string) {
   if (name === "meta" || name === "config" || name === "globalKeywords") {
     throw new Error(`deleteById not supported for singleton: ${name}`);
   }
+
   const db = await readStore();
   const rows = Array.isArray(db[name]) ? db[name] : [];
   const next = rows.filter((x: any) => x?.id !== id);
@@ -274,12 +305,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 }
 
 export async function writeDb(next: StoreShape) {
-  const names: StoreCollection[] = [
-    "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","connectors","reviewTrail","tenders",
-    "pipeline","references","graphNodes","graphEdges"
-  ];
-  for (const name of names) {
+  for (const name of ALL_COLLECTIONS) {
     await replaceCollection(name, next[name]);
   }
 }
