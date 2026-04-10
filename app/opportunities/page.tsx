@@ -1,4 +1,5 @@
 import { readStore } from "@/lib/storage";
+import Link from "next/link";
 
 export default async function OpportunitiesPage() {
   const db = await readStore();
@@ -28,7 +29,7 @@ export default async function OpportunitiesPage() {
             <tbody>
               {rows.map((x: any) => (
                 <tr key={x.id}>
-                  <td>{x.title}</td>
+                  <td><Link className="linkish" href={`/opportunities/${encodeURIComponent(x.id)}`}>{x.title}</Link></td>
                   <td>{x.region}</td>
                   <td>{x.trade}</td>
                   <td>{x.decision}</td>

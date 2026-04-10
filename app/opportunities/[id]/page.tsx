@@ -1,103 +1,154 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { readStore } from "@/lib/storage";
+import { getOpportunityDetail } from "@/lib/opportunityDetail";
+import { buildProposalWorkbench } from "@/lib/proposalWorkbench";
+import OpportunityStatusForm from "@/components/forms/OpportunityStatusForm";
+import OpportunityNoteForm from "@/components/forms/OpportunityNoteForm";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
-import OpportunityEditor from "@/components/forms/OpportunityEditor";
-import OpportunityLearningForm from "@/components/forms/OpportunityLearningForm";
-import { calculateOpportunity } from "@/lib/calcEngine";
-import { listReviewTrail } from "@/lib/reviewTrail";
 
-export default async function OpportunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function OpportunityDetailPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params;
-  const db = await readStore();
-  const opportunity = (db.opportunities || []).find((x: any) => x.id === id);
+  const detail = await getOpportunityDetail(id);
 
-  if (!opportunity) notFound();
+  if (!detail) {
+    return (
+      <div className="stack">
+        <h1 className="h1">Opportunity nicht gefunden</h1>
+      </div>
+    );
+  }
 
-  const sourceHit = (db.sourceHits || []).find((x: any) => x.id === opportunity.sourceHitId) || null;
-  const calc = await calculateOpportunity({ ...opportunity, extractedSpecs: sourceHit?.extractedSpecs || {} });
-  const reviews = await listReviewTrail(opportunity.id);
-
-  const agents = Array.isArray(db.agents) && db.agents.length
-    ? db.agents
-    : [
-        { id: "agent_nordost", name: "Agent Nord/Ost" },
-        { id: "agent_berlin_mitte", name: "Agent Berlin Mitte" },
-        { id: "agent_sachsen", name: "Agent Sachsen" },
-        { id: "agent_sicherheit", name: "Agent Sicherheit" },
-        { id: "assistenz_a", name: "Assistenz A" },
-        { id: "assistenz_b", name: "Assistenz B" }
-      ];
+  const workbench = buildProposalWorkbench(detail);
+  const opp = detail.opportunity;
 
   return (
     <div className="stack">
       <div>
-        <h1 className="h1"><span className="headline-accent">Opportunity</span> im Detail</h1>
-        <p className="sub">Manuelle Steuerung von Stage, Owner, Override, Frist und nächstem Schritt.</p>
+        <h1 className="h1">Opportunity Workbench</h1>
+        <p className="sub">Ausschreibung verstehen, Variablen klären, Kalkulationsbasis herstellen und Angebot vorbereiten.</p>
       </div>
 
       <div className="grid grid-2">
         <div className="card">
-          <div className="section-title">{opportunity.title}</div>
-          <div className="stack" style={{ marginTop: 16 }}>
-            <div className="meta">Region: {opportunity.region || "-"}</div>
-            <div className="meta">Geschäftsfeld: {opportunity.trade || "-"}</div>
-            <div className="meta">Volumen: {formatCurrencyCompact(opportunity.estimatedValue)}</div>
-            <div className="meta">Laufzeit: {opportunity.durationMonths || "-"} Monate</div>
-            <div className="meta">AI-Empfehlung: {opportunity.aiRecommendation || "-"}</div>
-            <div className="meta">AI-Begründung: {opportunity.aiReason || "-"}</div>
-            <div className="meta">AI-Confidence: {opportunity.aiConfidence ?? "-"}</div>
-            <div className="meta">Direktlink valide: {opportunity.directLinkValid ? "ja" : "nein"}</div>
-            <div className="meta">Operativ nutzbar: {opportunity.operationallyUsable ? "ja" : "nein"}</div>
-            <div className="meta">Kalkuliert: {calc.calculatedValue}</div>
-            <div className="meta">Kalkulationsmethode: {calc.calculationMethod}</div>
-            <div className="meta">Fehlende Parameter: {(!opportunity.estimatedValue || opportunity.estimatedValue <= 0) ? "Volumen-/Kostenlogik prüfen" : "-"}</div>
-          </div>
-
-          <div className="toolbar" style={{ marginTop: 20 }}>
-            {opportunity.externalResolvedUrl ? (
-              <a className="button" href={opportunity.externalResolvedUrl} target="_blank">Quelle öffnen</a>
-            ) : null}
-            {sourceHit ? (
-              <Link className="button-secondary" href={`/source-hits/${sourceHit.id}`}>Zum Treffer</Link>
-            ) : null}
-            <Link className="button-secondary" href="/opportunities">Zur Liste</Link>
+          <div className="section-title">Ausschreibung</div>
+          <div className="meta" style={{ marginTop: 14 }}>Titel: {opp.title}</div>
+          <div className="meta">Region: {opp.region}</div>
+          <div className="meta">Gewerk: {opp.trade}</div>
+          <div className="meta">Entscheidung: {opp.decision}</div>
+          <div className="meta">Stage: {opp.stage}</div>
+          <div className="meta">Kalkulationsmodus: {opp.calcMode}</div>
+          <div className="meta">Volumen: {formatCurrencyCompact(opp.estimatedValue || 0)}</div>
+          <div className="meta">Laufzeit: {opp.durationMonths || 0} Mon.</div>
+          <div className="meta">Frist: {opp.dueDate || "-"}</div>
+          <div className="meta">Owner: {opp.ownerId || "-"}</div>
+          <div className="meta">Assistenz: {opp.supportOwnerId || "-"}</div>
+          <div className="meta">
+            Direktlink:{" "}
+            {workbench?.blocks?.tenderSummary?.directLink ? (
+              <Link className="linkish" href={String(workbench.blocks.tenderSummary.directLink)} target="_blank">
+                Quelle öffnen
+              </Link>
+            ) : (
+              "nicht vorhanden"
+            )}
           </div>
         </div>
 
         <div className="card">
-          <div className="section-title">Bearbeitung</div>
-          <div style={{ marginTop: 16 }}>
-            <OpportunityEditor opportunity={opportunity} agents={agents} />
+          <div className="section-title">Arbeitsstatus</div>
+          <div className="meta" style={{ marginTop: 14 }}>Workbench-Status: {workbench?.workbenchStatus}</div>
+          <div className="meta">Nächste Aktion: {workbench?.nextAction}</div>
+          <div className="meta">Offene Variablen: {workbench?.metrics?.openVariables}</div>
+          <div className="meta">Beantwortet: {workbench?.metrics?.answeredVariables}</div>
+          <div className="meta">Parameter vorhanden: {workbench?.metrics?.parameterCount}</div>
+          <div className="meta">Direktlink valide: {workbench?.metrics?.directLinkValid ? "ja" : "nein"}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-2">
+        <OpportunityStatusForm id={opp.id} currentStage={opp.stage} currentDecision={opp.decision} />
+        <OpportunityNoteForm id={opp.id} />
+      </div>
+
+      <div className="grid grid-2">
+        <div className="card">
+          <div className="section-title">Offene Variablen</div>
+          <div className="table-wrap" style={{ marginTop: 14 }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Frage</th>
+                  <th>Typ</th>
+                  <th>Priorität</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(detail.missingVariables || []).map((x: any) => (
+                  <tr key={x.id}>
+                    <td>{x.question}</td>
+                    <td>{x.type}</td>
+                    <td>{x.priority}</td>
+                    <td>{x.status || "offen"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="section-title">Passende Parameter</div>
+          <div className="table-wrap" style={{ marginTop: 14 }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Typ</th>
+                  <th>Region</th>
+                  <th>Gewerk</th>
+                  <th>Wert</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(detail.parameterMemory || []).map((x: any, i: number) => (
+                  <tr key={x.id || i}>
+                    <td>{x.type}</td>
+                    <td>{x.region || "-"}</td>
+                    <td>{x.trade || "-"}</td>
+                    <td>{x.value ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
       <div className="card">
-        <div className="section-title">Review Trail</div>
+        <div className="section-title">Notizen</div>
         <div className="table-wrap" style={{ marginTop: 14 }}>
           <table className="table">
-            <thead><tr><th>Zeit</th><th>Typ</th><th>Review</th><th>Grund</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Zeit</th>
+                <th>Autor</th>
+                <th>Text</th>
+              </tr>
+            </thead>
             <tbody>
-              {reviews.map((r: any) => (
-                <tr key={r.id}>
-                  <td>{r.createdAt}</td>
-                  <td>{r.type}</td>
-                  <td>{r.manualDecision || "-"}</td>
-                  <td>{r.manualReason || "-"}</td>
+              {(detail.notes || []).map((x: any) => (
+                <tr key={x.id}>
+                  <td>{x.createdAt}</td>
+                  <td>{x.author}</td>
+                  <td>{x.text}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div className="card">
-        <div className="section-title">Lernfeedback & Parameter</div>
-        <div className="meta" style={{ marginTop: 10, marginBottom: 14 }}>
-          Bestätigte Werte aus realer Bearbeitung können als regionale Lernbasis für künftige Ausschreibungen gespeichert werden.
-        </div>
-        <OpportunityLearningForm opportunity={opportunity} />
       </div>
     </div>
   );
