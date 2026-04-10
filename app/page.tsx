@@ -124,7 +124,7 @@ export default async function DashboardPage({
                 <tbody>
                   {data.regionTradeRows.map((row: any, i: number) => (
                     <tr key={`${row?.region || "na"}_${row?.trade || "na"}_${i}`}>
-                      <td><Link className="linkish" href={row.href}>{row.region}</Link></td>
+                      <td><Link className="linkish" href={typeof row?.href === "string" && row.href ? row.href : `/source-hits?trade=${encodeURIComponent(row?.trade || "")}&region=${encodeURIComponent(row?.region || "")}`}>{row.region}</Link></td>
                       <td><Link className="linkish" href={typeof row?.href === "string" && row.href ? row.href : `/?trade=${encodeURIComponent(row?.trade || "Alle")}`}>{row.trade}</Link></td>
                       <td>{row.hits}</td>
                       <td>{formatCurrencyCompact(row.volume)}</td>
