@@ -1,9 +1,11 @@
 import { buildDashboardWorkbench } from "@/lib/dashboardWorkbench";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
+import { readLiveRunState } from "@/lib/liveWorkbench";
 import WorkbenchSidebarLeft from "@/components/dashboard/WorkbenchSidebarLeft";
 import WorkbenchSidebarRight from "@/components/dashboard/WorkbenchSidebarRight";
 import WorkbenchSearchBar from "@/components/dashboard/WorkbenchSearchBar";
 import WorkbenchInsights from "@/components/dashboard/WorkbenchInsights";
+import LiveActionBar from "@/components/dashboard/LiveActionBar";
 import Link from "next/link";
 
 function q(v: string | undefined) {
@@ -24,13 +26,16 @@ export default async function DashboardPage({
     search: typeof sp.search === "string" ? sp.search : undefined
   };
 
-  const data = await buildDashboardWorkbench({
-    trade: q(current.trade),
-    region: q(current.region),
-    decision: q(current.decision),
-    sourceId: q(current.sourceId),
-    search: current.search
-  });
+  const [data, liveState] = await Promise.all([
+    buildDashboardWorkbench({
+      trade: q(current.trade),
+      region: q(current.region),
+      decision: q(current.decision),
+      sourceId: q(current.sourceId),
+      search: current.search
+    }),
+    readLiveRunState()
+  ]);
 
   return (
     <div className="wb-shell">
@@ -42,9 +47,11 @@ export default async function DashboardPage({
             <span className="headline-accent">Ausschreibungen</span> gezielt steuern.
           </h1>
           <p className="sub">
-            Steuerzentrale nach Geschäftsfeld, Region, Entscheidung, Quelle, Frist und Potenzial.
+            Live-Steuerung für Geschäftsfelder, Regionen, Quellen, Direktlinks und KI-Bewertung.
           </p>
         </div>
+
+        <LiveActionBar liveState={liveState} />
 
         <WorkbenchSearchBar
           search={current.search}
@@ -83,7 +90,7 @@ export default async function DashboardPage({
                 <tbody>
                   {data.tradeMatrix.map((row: any) => (
                     <tr key={row.trade}>
-                      <td><Link className="linkish" href={`/?trade=${encodeURIComponent(row.trade)}`}>{row.trade}</Link></td>
+                      <td><Link className="linkish" href={row.href}>{row.trade}</Link></td>
                       <td>{row.hits}</td>
                       <td>{formatCurrencyCompact(row.volume)}</td>
                       <td>{row.bid}</td>
@@ -116,8 +123,8 @@ export default async function DashboardPage({
                 <tbody>
                   {data.regionTradeRows.map((row: any, i: number) => (
                     <tr key={`${row.region}_${row.trade}_${i}`}>
-                      <td><Link className="linkish" href={`/?region=${encodeURIComponent(row.region)}`}>{row.region}</Link></td>
-                      <td><Link className="linkish" href={`/?trade=${encodeURIComponent(row.trade)}`}>{row.trade}</Link></td>
+                      <td><Link className="linkish" href={row.href}>{row.region}</Link></td>
+                      <td><Link className="linkish" href={row.href}>{row.trade}</Link></td>
                       <td>{row.hits}</td>
                       <td>{formatCurrencyCompact(row.volume)}</td>
                       <td>{row.bid}</td>
