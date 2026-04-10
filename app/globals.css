@@ -271,3 +271,40 @@ a{color:inherit;text-decoration:none}
 @media (max-width: 780px){
   .stage-board-5{grid-template-columns:1fr}
 }
+
+.wb-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+.wb-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.wb-sidebar {
+  position: sticky;
+  top: 16px;
+}
+.wb-filter-link,
+.wb-highlight-link {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.wb-highlight-link:hover,
+.wb-filter-link:hover {
+  border-color: var(--accent);
+}
+@media (max-width: 1200px) {
+  .wb-layout {
+    grid-template-columns: 1fr;
+  }
+  .wb-sidebar {
+    position: static;
+  }
+}

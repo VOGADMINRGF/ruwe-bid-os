@@ -1,332 +1,190 @@
 import Link from "next/link";
-import { readStore } from "@/lib/storage";
-import { formatDateTime, modeLabel, modeBadgeClass } from "@/lib/format";
-import { aggregateHitsByRegionAndTrade } from "@/lib/sourceLogic";
-import { topDeadlineStats, topForecastCards, sourcePerformanceRows } from "@/lib/dashboardLogic";
-import { portfolioSummary, highAttentionCases, missingCoverageCases, longRunningCases, managementNarrative } from "@/lib/managementMetrics";
+import { buildDashboardWorkbench } from "@/lib/dashboardWorkbench";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
-import { pipelineStageBuckets } from "@/lib/pipelineFilters";
+import WorkbenchSidebarLeft from "@/components/dashboard/WorkbenchSidebarLeft";
+import WorkbenchSidebarRight from "@/components/dashboard/WorkbenchSidebarRight";
+import WorkbenchSearchBar from "@/components/dashboard/WorkbenchSearchBar";
 
-function DecisionCard({ href, label, value, sub }: { href: string; label: string; value: string; sub: string }) {
-  return (
-    <Link href={href} className="card">
-      <div className="label">{label}</div>
-      <div className="kpi-compact">{value}</div>
-      <div className="metric-sub">{sub}</div>
-    </Link>
-  );
+function q(v: string | undefined) {
+  return v && v !== "Alle" ? v : undefined;
 }
 
-export default async function DashboardPage() {
-  const db = await readStore();
-  const meta = db.meta || {};
-  const hits = db.sourceHits || [];
-  const deadlines = topDeadlineStats(db);
-  const forecastCards = topForecastCards(db);
-  const sourceRows = sourcePerformanceRows(db);
-  const grouped = aggregateHitsByRegionAndTrade(hits).slice(0, 10);
-  const portfolio = portfolioSummary(db);
-  const narrative = managementNarrative(db);
-  const highAttention = highAttentionCases(db);
-  const longRun = longRunningCases(db);
-  const gaps = missingCoverageCases(db);
-  const stageRows = pipelineStageBuckets(db.pipeline || []);
-  const mode = meta.dataMode || "live";
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const current = {
+    trade: typeof sp.trade === "string" ? sp.trade : undefined,
+    region: typeof sp.region === "string" ? sp.region : undefined,
+    decision: typeof sp.decision === "string" ? sp.decision : undefined,
+    sourceId: typeof sp.sourceId === "string" ? sp.sourceId : undefined,
+    search: typeof sp.search === "string" ? sp.search : undefined
+  };
 
-  const stageMap = new Map(stageRows.map((x: any) => [x.stage, x]));
-  const lostCount = (db.pipeline || []).filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage)).length;
-  const lostValue = (db.pipeline || [])
-    .filter((x: any) => ["Verloren", "No-Bid", "Abgelehnt"].includes(x.stage))
-    .reduce((s: number, x: any) => s + Number(x.value || 0), 0);
-
-  const stageTop5 = [
-    stageMap.get("Qualifiziert") || { stage: "Qualifiziert", count: 0, value: 0 },
-    stageMap.get("Review") || { stage: "Review", count: 0, value: 0 },
-    stageMap.get("Freigabe intern") || { stage: "Freigabe intern", count: 0, value: 0 },
-    stageMap.get("Angebot") || { stage: "Angebot", count: 0, value: 0 },
-    { stage: "Verloren / No-Bid", count: lostCount, value: lostValue }
-  ];
+  const data = await buildDashboardWorkbench({
+    trade: q(current.trade),
+    region: q(current.region),
+    decision: q(current.decision),
+    sourceId: q(current.sourceId),
+    search: current.search
+  });
 
   return (
-    <div className="stack">
-      <section className="stack" style={{ gap: 8 }}>
-        <h1 className="h1"><span className="headline-accent">Ausschreibungen</span> gezielt steuern.</h1>
-        <p className="sub">
-          Steuerzentrale für Ausschreibungen nach Region, Geschäftsfeld, Radius, Quelle und Frist.
-        </p>
-      </section>
+    <div className="wb-layout">
+      <WorkbenchSidebarLeft filters={data.leftFilters} current={current} />
 
-      <section className="card">
-        <div className="focus-callout">
-          <div className="stack" style={{ gap: 10 }}>
-            <div className="row" style={{ alignItems: "center", gap: 10 }}>
-              <div className="section-title">Management-Schnellblick</div>
-              <span className={modeBadgeClass(mode)}>Datenstand: {modeLabel(mode)}</span>
+      <main className="wb-main">
+        <div>
+          <h1 className="h1"><span className="headline-accent">Ausschreibungen</span> gezielt steuern.</h1>
+          <p className="sub">Steuerzentrale nach Geschäftsfeld, Region, Entscheidung, Quelle, Frist und Potenzial.</p>
+        </div>
+
+        <WorkbenchSearchBar
+          search={current.search}
+          trade={current.trade}
+          region={current.region}
+          decision={current.decision}
+          sourceId={current.sourceId}
+          filters={data.leftFilters}
+        />
+
+        <div className="grid grid-6">
+          <div className="card"><div className="label">Ausschreibungsvolumen</div><div className="kpi-compact">{formatCurrencyCompact(data.kpis.totalVolume)}</div><div className="metric-sub">{data.kpis.hitCount} Treffer</div></div>
+          <div className="card"><div className="label">Empfohlen</div><div className="kpi-compact">{formatCurrencyCompact(data.kpis.recommendedVolume)}</div><div className="metric-sub">{data.kpis.bidCount} Bid</div></div>
+          <div className="card"><div className="label">Prüfen</div><div className="kpi-compact">{data.kpis.reviewCount}</div><div className="metric-sub">manuelle Prüfung</div></div>
+          <div className="card"><div className="label">No-Bid</div><div className="kpi-compact">{formatCurrencyCompact(data.kpis.noBidVolume)}</div><div className="metric-sub">{data.kpis.noBidCount} Fälle</div></div>
+          <div className="card"><div className="label">Standorte</div><div className="kpi-compact">{data.kpis.siteCount}</div><div className="metric-sub">aktive Basis</div></div>
+          <div className="card"><div className="label">Regeln</div><div className="kpi-compact">{data.kpis.ruleCount}</div><div className="metric-sub">Betriebslogik</div></div>
+        </div>
+
+        <div className="grid grid-2">
+          <div className="card">
+            <div className="section-title">Ausschreibungsniveau je Geschäftsfeld</div>
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Geschäftsfeld</th>
+                    <th>Treffer</th>
+                    <th>Volumen</th>
+                    <th>Bid</th>
+                    <th>Prüfen</th>
+                    <th>No-Bid</th>
+                    <th>stärkste Region</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.tradeMatrix.map((row: any) => (
+                    <tr key={row.trade}>
+                      <td><Link className="linkish" href={`/?trade=${encodeURIComponent(row.trade)}`}>{row.trade}</Link></td>
+                      <td>{row.hits}</td>
+                      <td>{formatCurrencyCompact(row.volume)}</td>
+                      <td>{row.bid}</td>
+                      <td>{row.review}</td>
+                      <td>{row.noBid}</td>
+                      <td>{row.strongestRegion}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="meta">Letzter Abruf: {formatDateTime(meta.lastSuccessfulIngestionAt)}</div>
-            <div className="meta">Letzte Quelle: {meta.lastSuccessfulIngestionSource || "-"}</div>
+          </div>
 
-            <div className="toolbar" style={{ marginTop: 8 }}>
-              <Link className="button" href="/api/ops/live-ingest?redirect=1">Abruf starten</Link>
-              <Link className="button-secondary" href="/api/ops/analyze-hits?redirect=1">AI Analyse</Link>
-              <Link className="button-secondary" href="/pipeline?window=7d">Fristen jetzt</Link>
+          <div className="card">
+            <div className="section-title">Region × Geschäftsfeld Potenziale</div>
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Region</th>
+                    <th>Geschäftsfeld</th>
+                    <th>Treffer</th>
+                    <th>Volumen</th>
+                    <th>Bid</th>
+                    <th>Prüfen</th>
+                    <th>No-Bid</th>
+                    <th>Grund</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.regionTradeRows.map((row: any, i: number) => (
+                    <tr key={`${row.region}_${row.trade}_${i}`}>
+                      <td><Link className="linkish" href={`/?region=${encodeURIComponent(row.region)}`}>{row.region}</Link></td>
+                      <td><Link className="linkish" href={`/?trade=${encodeURIComponent(row.trade)}`}>{row.trade}</Link></td>
+                      <td>{row.hits}</td>
+                      <td>{formatCurrencyCompact(row.volume)}</td>
+                      <td>{row.bid}</td>
+                      <td>{row.review}</td>
+                      <td>{row.noBid}</td>
+                      <td>{row.noBidReason || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-3">
+          <div className="card">
+            <div className="section-title">Besonders zu fokussieren</div>
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table className="table">
+                <thead><tr><th>Titel</th><th>Region</th><th>Volumen</th></tr></thead>
+                <tbody>
+                  {data.focusHits.map((x: any) => (
+                    <tr key={x.id}>
+                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.region || "")}`}>{x.title}</Link></td>
+                      <td>{x.region}</td>
+                      <td>{formatCurrencyCompact(x.estimatedValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div className="card soft">
-            <div className="section-title">Management-Ableitung</div>
-            <p className="meta" style={{ marginTop: 14 }}>{narrative.lead}</p>
-            <p className="meta">{narrative.second}</p>
-            <p className="meta">{narrative.third}</p>
-            <p className="meta">{narrative.fourth}</p>
-            <p className="meta" style={{ marginTop: 12 }}>
-              KI-Setup: GPT trifft die Erstbewertung. Claude wird bei Grenzfällen, hohen Volumina, langen Laufzeiten oder Unsicherheit als Zweitmeinung zugeschaltet.
-            </p>
+          <div className="card">
+            <div className="section-title">Höchste Laufzeiten</div>
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table className="table">
+                <thead><tr><th>Titel</th><th>Region</th><th>Laufzeit</th></tr></thead>
+                <tbody>
+                  {data.longRuns.map((x: any) => (
+                    <tr key={x.id}>
+                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}`}>{x.title}</Link></td>
+                      <td>{x.region}</td>
+                      <td>{x.durationMonths || 0} Mon.</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
 
-      <section className="grid grid-6">
-        <DecisionCard href="/source-hits" label="Ausschreibungsvolumen" value={formatCurrencyCompact(portfolio.totalVolume)} sub={`${portfolio.totalCount} Treffer`} />
-        <DecisionCard href="/opportunities" label="Empfohlen" value={formatCurrencyCompact(portfolio.bidVolume)} sub={`${portfolio.bidCount} Kandidaten`} />
-        <DecisionCard href="/opportunities" label="Manuell prüfen" value={formatCurrencyCompact(portfolio.reviewVolume)} sub={`${portfolio.reviewCount} Prüffälle`} />
-        <DecisionCard href="/source-hits?decision=No-Go" label="No-Bid / Beobachten" value={formatCurrencyCompact(portfolio.noGoVolume)} sub={`${portfolio.noGoCount} nicht priorisiert`} />
-        <DecisionCard href="/pipeline?window=7d" label="Fristen 7 Tage" value={`${deadlines.due7}`} sub="sofort handeln" />
-        <DecisionCard href="/sites" label="Standorte / Regeln" value={`${(db.sites || []).filter((x: any) => x.active).length} / ${(db.siteTradeRules || []).filter((x: any) => x.enabled).length}`} sub="aktive Abdeckung" />
-      </section>
+          <div className="card">
+            <div className="section-title">No-Bid / Blocker</div>
+            <div className="table-wrap" style={{ marginTop: 14 }}>
+              <table className="table">
+                <thead><tr><th>Titel</th><th>Region</th><th>Grund</th></tr></thead>
+                <tbody>
+                  {data.noBidRows.map((x: any) => (
+                    <tr key={x.id}>
+                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?region=${encodeURIComponent(x.region || "")}`}>{x.title}</Link></td>
+                      <td>{x.region}</td>
+                      <td>{x.noBidReason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
 
-      <section className="grid grid-2">
-        <div className="card">
-          <div className="section-title">Wo lohnt Fokus?</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Geschäftsfelder und Regionen mit attraktivem Marktbild.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Geschäftsfeld</th>
-                  <th>Region</th>
-                  <th>Treffer</th>
-                  <th>Volumen</th>
-                  <th>Bid</th>
-                  <th>Prüfen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {forecastCards.map((row: any) => (
-                  <tr key={`${row.trade}_${row.region}`}>
-                    <td><Link className="linkish" href={`/source-hits?trade=${encodeURIComponent(row.trade)}&region=${encodeURIComponent(row.region)}`}>{row.trade}</Link></td>
-                    <td>{row.region}</td>
-                    <td>{row.count}</td>
-                    <td>{formatCurrencyCompact(row.volume)}</td>
-                    <td>{row.bids}</td>
-                    <td>{row.reviews}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Quellenleistung</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Welche Quellen aktuell am meisten verwertbare Treffer liefern.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Quelle</th>
-                  <th>Letzter Abruf</th>
-                  <th>Seit Abruf</th>
-                  <th>Go</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sourceRows.slice(0, 6).map((row: any) => (
-                  <tr key={row.id}>
-                    <td><Link className="linkish" href={`/source-hits?q=${encodeURIComponent(row.name)}`}>{row.name}</Link></td>
-                    <td>{formatDateTime(row.lastFetchAt)}</td>
-                    <td>{row.tendersSinceLastFetch}</td>
-                    <td>{row.goLast30Days}</td>
-                    <td>{row.score}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="section-title">Pipeline-Steuerung</div>
-        <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-          Stages, Volumen und verlorene Chancen im Überblick.
-        </div>
-        <div className="stage-board-5">
-          {stageTop5.map((stage: any) => (
-            <Link key={stage.stage} href={stage.stage === "Verloren / No-Bid" ? "/pipeline?window=lost" : `/pipeline?stage=${encodeURIComponent(stage.stage)}`} className="stage-card">
-              <div className="label">{stage.stage}</div>
-              <div className="stage-count">{stage.count}</div>
-              <div className="stage-value">{formatCurrencyCompact(stage.value)}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid grid-2">
-        <div className="card">
-          <div className="section-title">Region × Geschäftsfeld × Volumen</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Sichtbare Marktsegmente mit aktuellem Volumenbild.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Region</th>
-                  <th>Geschäftsfeld</th>
-                  <th>Quellen</th>
-                  <th>Anzahl</th>
-                  <th>Volumen</th>
-                  <th>Laufzeit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grouped.map((row: any) => (
-                  <tr key={`${row.region}_${row.trade}`}>
-                    <td>{row.region}</td>
-                    <td><Link className="linkish" href={`/source-hits?trade=${encodeURIComponent(row.trade)}&region=${encodeURIComponent(row.region)}`}>{row.trade}</Link></td>
-                    <td>{row.sources}</td>
-                    <td>{row.count}</td>
-                    <td>{formatCurrencyCompact(row.volume)}</td>
-                    <td>{row.avgDurationMonths} Mon.</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Jetzt handeln</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Die wichtigsten unmittelbaren Arbeitsfelder.
-          </div>
-          <div className="stack">
-            <Link href="/pipeline?window=7d" className="card soft">
-              <div className="label">Fristen</div>
-              <div className="meta" style={{ marginTop: 10 }}>
-                {deadlines.due7} Chancen laufen innerhalb von 7 Tagen ab.
-              </div>
-            </Link>
-            <Link href="/opportunities" className="card soft">
-              <div className="label">Reviews</div>
-              <div className="meta" style={{ marginTop: 10 }}>
-                {portfolio.reviewCount} Treffer benötigen manuelle Entscheidung.
-              </div>
-            </Link>
-            <Link href="/source-hits?decision=No-Go" className="card soft">
-              <div className="label">Abdeckung</div>
-              <div className="meta" style={{ marginTop: 10 }}>
-                {gaps.length} Fälle zeigen aktuell Lücken bei Standort, Gewerk oder Radius.
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid grid-3">
-        <div className="card">
-          <div className="section-title">Besonders zu fokussieren</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Auffällig wegen Kombination aus Volumen, Laufzeit und Fit.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Titel</th>
-                  <th>Region</th>
-                  <th>Geschäftsfeld</th>
-                  <th>Volumen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {highAttention.map((row: any) => (
-                  <tr key={row.id}>
-                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
-                    <td>{row.region || "-"}</td>
-                    <td>{row.trade || "-"}</td>
-                    <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Höchste Laufzeiten</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Relevant für langfristige Kapazitätsplanung.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Titel</th>
-                  <th>Region</th>
-                  <th>Geschäftsfeld</th>
-                  <th>Laufzeit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {longRun.map((row: any) => (
-                  <tr key={row.id}>
-                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
-                    <td>{row.region || "-"}</td>
-                    <td>{row.trade || "-"}</td>
-                    <td>{row.durationMonths || "-"} Mon.</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="section-title">Abdeckungslücken</div>
-          <div className="meta" style={{ marginTop: 8, marginBottom: 14 }}>
-            Potenziell interessante Fälle ohne sauberen Fit.
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Titel</th>
-                  <th>Region</th>
-                  <th>Volumen</th>
-                  <th>Lücke</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gaps.map((row: any) => (
-                  <tr key={row.id}>
-                    <td><Link className="linkish" href={`/source-hits/${row.id}`}>{row.title}</Link></td>
-                    <td>{row.region || "-"}</td>
-                    <td>{formatCurrencyCompact(Number(row.estimatedValue || 0))}</td>
-                    <td>{row.gapReason}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      <WorkbenchSidebarRight items={data.rightHighlights} />
     </div>
   );
 }
