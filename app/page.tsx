@@ -6,6 +6,7 @@ import WorkbenchSidebarRight from "@/components/dashboard/WorkbenchSidebarRight"
 import WorkbenchSearchBar from "@/components/dashboard/WorkbenchSearchBar";
 import WorkbenchInsights from "@/components/dashboard/WorkbenchInsights";
 import LiveActionBar from "@/components/dashboard/LiveActionBar";
+import OwnerWorkloadWidget from "@/components/dashboard/OwnerWorkloadWidget";
 import Link from "next/link";
 
 function q(v: string | undefined) {
@@ -144,6 +145,8 @@ export default async function DashboardPage({
           longRuns={data.longRuns}
           noBidRows={data.noBidRows}
         />
+
+        <OwnerWorkloadWidget />
       </main>
 
       <WorkbenchSidebarRight items={data.rightHighlights} />

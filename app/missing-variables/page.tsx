@@ -8,7 +8,7 @@ export default async function MissingVariablesPage() {
     <div className="stack">
       <div>
         <h1 className="h1">Missing Variables</h1>
-        <p className="sub">Gezielte Rückfragen für Volumen, Stunden, Fläche, Fristen, Direktlinks und Kalkulationsparameter.</p>
+        <p className="sub">Gezielte Rückfragen für Stunden, Fläche, Frist, Linkvalidität und regionale Standardsätze.</p>
       </div>
 
       <div className="card">
@@ -22,6 +22,7 @@ export default async function MissingVariablesPage() {
                 <th>Gewerk</th>
                 <th>Priorität</th>
                 <th>Owner</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -33,6 +34,7 @@ export default async function MissingVariablesPage() {
                   <td>{x.trade}</td>
                   <td>{x.priority}</td>
                   <td>{x.ownerId || "-"}</td>
+                  <td>{x.status || "offen"}</td>
                 </tr>
               ))}
             </tbody>
