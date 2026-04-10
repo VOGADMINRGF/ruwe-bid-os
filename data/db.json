@@ -2,10 +2,70 @@
   "meta": {
     "appName": "RUWE Bid OS",
     "version": "phase5-master-fix",
-    "lastSuccessfulIngestionAt": "2026-04-09T13:05:00.000Z",
+    "lastSuccessfulIngestionAt": "2026-04-10T03:40:02.649Z",
     "lastSuccessfulIngestionSource": "TED Search API",
-    "dataMode": "demo",
-    "dataValidityNote": "Aktuell Demo-/Smoke-Stand mit ersten Live-Elementen. Werte sind strukturell nutzbar, aber noch nicht voll produktiv belastbar."
+    "dataMode": "live",
+    "dataValidityNote": "Live-Abruf aktiv. Werte basieren auf aktuellen Quellenläufen und AI-Vorprüfung.",
+    "aiProviderStrategy": {
+      "primary": "openai",
+      "secondary": "anthropic",
+      "note": "GPT für Routing, Kurzbewertung und Struktur. Claude für Tiefenanalyse, Begründung und Second Opinion."
+    },
+    "lastRunAllAt": "2026-04-10T03:42:34.560Z",
+    "lastRunAllPhases": [
+      {
+        "key": "fetch",
+        "status": "done",
+        "startedAt": "2026-04-10T03:39:58.634Z",
+        "result": {
+          "ok": true,
+          "fetched": 11,
+          "liveCount": 11
+        },
+        "finishedAt": "2026-04-10T03:40:14.724Z"
+      },
+      {
+        "key": "validate",
+        "status": "done",
+        "startedAt": "2026-04-10T03:40:14.724Z",
+        "result": {
+          "enrich": {
+            "changed": 11
+          },
+          "scan": {
+            "total": 11,
+            "invalidLinks": 0,
+            "aiBlocked": 0
+          }
+        },
+        "finishedAt": "2026-04-10T03:40:30.825Z"
+      },
+      {
+        "key": "gate",
+        "status": "done",
+        "startedAt": "2026-04-10T03:40:30.825Z",
+        "result": {
+          "totalHits": 11,
+          "aiCandidates": 11
+        },
+        "finishedAt": "2026-04-10T03:40:34.832Z"
+      },
+      {
+        "key": "ai",
+        "status": "done",
+        "startedAt": "2026-04-10T03:40:34.832Z",
+        "result": {
+          "analyzed": 11
+        },
+        "finishedAt": "2026-04-10T03:42:30.503Z"
+      },
+      {
+        "key": "done",
+        "status": "done",
+        "startedAt": "2026-04-10T03:42:30.503Z",
+        "finishedAt": "2026-04-10T03:42:30.503Z"
+      }
+    ]
   },
   "config": {},
   "sourceRegistry": [
@@ -16,7 +76,13 @@
       "official": true,
       "authRequired": false,
       "legalUse": "hoch",
-      "dataMode": "demo"
+      "dataMode": "demo",
+      "status": "done",
+      "lastRunAt": "2026-04-10T03:39:56.008Z",
+      "lastRunOk": true,
+      "lastRunCount": 0,
+      "lastError": null,
+      "updatedAt": "2026-04-10T03:39:56.008Z"
     },
     {
       "id": "src_service_bund",
@@ -43,7 +109,13 @@
       "official": true,
       "authRequired": false,
       "legalUse": "vorsicht",
-      "dataMode": "demo"
+      "dataMode": "demo",
+      "status": "done",
+      "lastRunAt": "2026-04-10T03:40:37.018Z",
+      "lastRunOk": true,
+      "lastRunCount": 0,
+      "lastError": null,
+      "updatedAt": "2026-04-10T03:40:37.019Z"
     }
   ],
   "sourceStats": [
@@ -112,7 +184,34 @@
       "addedSinceLastFetch": true,
       "url": "https://ted.europa.eu/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://ted.europa.eu/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Kernleistung Unterhaltsreinigung, regionale Passung (Berlin Ost, 7 km zur Niederlassung), attraktives Auftragsvolumen (~920k/24 Monate) und Laufzeit. Hohe RUWE-Relevanz und realistisch bedienbar.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.88,
+      "aiPrimaryReason": "Kernleistung Unterhaltsreinigung, regionale Passung (Berlin Ost, 7 km zur Niederlassung), attraktives Auftragsvolumen (~920k/24 Monate) und Laufzeit. Hohe RUWE-Relevanz und realistisch bedienbar.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:40:47.761Z"
     },
     {
       "id": "hit2",
@@ -129,7 +228,34 @@
       "addedSinceLastFetch": true,
       "url": "https://ted.europa.eu/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://ted.europa.eu/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Hausmeisterdienst ist Kernleistung von RUWE; Standortnähe (5 km) und öffentliches Objektportfolio in Berlin-Mitte passen gut. Auftragsvolumen und Laufzeit sind attraktiv und realistisch bedienbar.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.84,
+      "aiPrimaryReason": "Hausmeisterdienst ist Kernleistung von RUWE; Standortnähe (5 km) und öffentliches Objektportfolio in Berlin-Mitte passen gut. Auftragsvolumen und Laufzeit sind attraktiv und realistisch bedienbar.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:40:55.617Z"
     },
     {
       "id": "hit3",
@@ -146,7 +272,34 @@
       "addedSinceLastFetch": true,
       "url": "https://service.bund.de/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://service.bund.de/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Kernleistung (Sicherheitsdienste), lokale Präsenz in Magdeburg (4 km), attraktives Volumen und Laufzeit. Annahme: §34a-Zulassung und ausreichende Personalkapazität vorhanden.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.82,
+      "aiPrimaryReason": "Kernleistung (Sicherheitsdienste), lokale Präsenz in Magdeburg (4 km), attraktives Volumen und Laufzeit. Annahme: §34a-Zulassung und ausreichende Personalkapazität vorhanden.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:08.430Z"
     },
     {
       "id": "hit4",
@@ -163,7 +316,34 @@
       "addedSinceLastFetch": true,
       "url": "https://service.bund.de/",
       "dataMode": "demo",
-      "dueDate": "2026-04-18"
+      "dueDate": "2026-04-18",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://service.bund.de/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "Bid",
+      "aiReason": "Kernleistung Winterdienst, kommunale Flächen, sehr nahe RUWE-Standort (2 km), Auftragswert ~310k und 12 Monate – wirtschaftlich und logistisch passend.",
+      "aiConfidence": 0.88,
+      "aiProvider": "openai:gpt-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.88,
+      "aiPrimaryReason": "Kernleistung Winterdienst, kommunale Flächen, sehr nahe RUWE-Standort (2 km), Auftragswert ~310k und 12 Monate – wirtschaftlich und logistisch passend.",
+      "aiSecondaryProvider": null,
+      "aiSecondaryDecision": null,
+      "aiSecondaryConfidence": null,
+      "aiSecondaryReason": null,
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:14.905Z"
     },
     {
       "id": "hit5",
@@ -180,7 +360,34 @@
       "addedSinceLastFetch": true,
       "url": "https://www.berlin.de/vergabeplattform/",
       "dataMode": "demo",
-      "dueDate": "2026-04-18"
+      "dueDate": "2026-04-18",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://www.berlin.de/vergabeplattform/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "Bid",
+      "aiReason": "Grünpflege ist Kernleistung; sehr kurze Distanz (3 km) zur Niederlassung; Auftragswert (~440 T€) und Laufzeit (18 Monate) sind attraktiv und operativ realistisch.",
+      "aiConfidence": 0.9,
+      "aiProvider": "openai:gpt-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.9,
+      "aiPrimaryReason": "Grünpflege ist Kernleistung; sehr kurze Distanz (3 km) zur Niederlassung; Auftragswert (~440 T€) und Laufzeit (18 Monate) sind attraktiv und operativ realistisch.",
+      "aiSecondaryProvider": null,
+      "aiSecondaryDecision": null,
+      "aiSecondaryConfidence": null,
+      "aiSecondaryReason": null,
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:22.379Z"
     },
     {
       "id": "hit6",
@@ -197,7 +404,34 @@
       "addedSinceLastFetch": true,
       "url": "https://ted.europa.eu/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://ted.europa.eu/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Gebäudereinigung ist Kernleistung; lokale Niederlassung in Zeitz (2 km) senkt Logistikrisiken; attraktives Volumen (~610 T€) und 24 Monate Laufzeit. Gute Passung und Wirtschaftlichkeit.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.9,
+      "aiPrimaryReason": "Gebäudereinigung ist Kernleistung; lokale Niederlassung in Zeitz (2 km) senkt Logistikrisiken; attraktives Volumen (~610 T€) und 24 Monate Laufzeit. Gute Passung und Wirtschaftlichkeit.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:27.874Z"
     },
     {
       "id": "hit7",
@@ -214,7 +448,34 @@
       "addedSinceLastFetch": false,
       "url": "https://service.bund.de/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://service.bund.de/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Sicherheitsdienst/Objektschutz ist RUWE-relevant und lokal; Auftragswert attraktiv. Vor Entscheidung Qualifikationen (34a/Bewacherregister), behördliche Auflagen und 24/7-Personalkapazität für mehrere Liegenschaften prüfen.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Prüfen",
+      "aiPrimaryConfidence": 0.7,
+      "aiPrimaryReason": "Sicherheitsdienst/Objektschutz ist RUWE-relevant und lokal; Auftragswert attraktiv. Vor Entscheidung Qualifikationen (34a/Bewacherregister), behördliche Auflagen und 24/7-Personalkapazität für mehrere Liegenschaften prüfen.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:40.996Z"
     },
     {
       "id": "hit8",
@@ -231,7 +492,34 @@
       "addedSinceLastFetch": false,
       "url": "https://www.berlin.de/vergabeplattform/",
       "dataMode": "demo",
-      "dueDate": "2026-04-25"
+      "dueDate": "2026-04-25",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://www.berlin.de/vergabeplattform/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "No-Go",
+      "aiReason": "Hausmeisterdienst ist Kernleistung; Standortnähe (1 km) in Berlin-Neukölln, Auftragswert (~260 T€) und Laufzeit (24 Monate) attraktiv; keine besonderen Risiken erkennbar.",
+      "aiConfidence": 0.5,
+      "aiProvider": "openai:gpt-5+anthropic:claude-sonnet-4-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.88,
+      "aiPrimaryReason": "Hausmeisterdienst ist Kernleistung; Standortnähe (1 km) in Berlin-Neukölln, Auftragswert (~260 T€) und Laufzeit (24 Monate) attraktiv; keine besonderen Risiken erkennbar.",
+      "aiSecondaryProvider": "anthropic:claude-sonnet-4-5",
+      "aiSecondaryDecision": "No-Go",
+      "aiSecondaryConfidence": 0.5,
+      "aiSecondaryReason": "",
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:50.005Z"
     },
     {
       "id": "hit9",
@@ -248,7 +536,34 @@
       "addedSinceLastFetch": true,
       "url": "https://www.dtvp.de/",
       "dataMode": "demo",
-      "dueDate": "2026-04-18"
+      "dueDate": "2026-04-18",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://www.dtvp.de/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "Bid",
+      "aiReason": "Kernleistung (Reinigung), regionale Nähe (17 km, BH Südost), Verwaltungsobjekte passen ins Portfolio; Auftragswert (~290 T€) und Laufzeit (12 Monate) attraktiv.",
+      "aiConfidence": 0.78,
+      "aiProvider": "openai:gpt-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.78,
+      "aiPrimaryReason": "Kernleistung (Reinigung), regionale Nähe (17 km, BH Südost), Verwaltungsobjekte passen ins Portfolio; Auftragswert (~290 T€) und Laufzeit (12 Monate) attraktiv.",
+      "aiSecondaryProvider": null,
+      "aiSecondaryDecision": null,
+      "aiSecondaryConfidence": null,
+      "aiSecondaryReason": null,
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:41:56.892Z"
     },
     {
       "id": "hit10",
@@ -265,7 +580,34 @@
       "addedSinceLastFetch": true,
       "url": "https://ted.europa.eu/",
       "dataMode": "demo",
-      "dueDate": "2026-04-18"
+      "dueDate": "2026-04-18",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://ted.europa.eu/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "Bid",
+      "aiReason": "Kernleistung Glasreinigung, regional sehr nah (6 km) mit passendem Standort (bh_nordost). Auftragswert und Laufzeit attraktiv; Schulstandorte sind für RUWE erfahrungsgemäß gut handhabbar.",
+      "aiConfidence": 0.9,
+      "aiProvider": "openai:gpt-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.9,
+      "aiPrimaryReason": "Kernleistung Glasreinigung, regional sehr nah (6 km) mit passendem Standort (bh_nordost). Auftragswert und Laufzeit attraktiv; Schulstandorte sind für RUWE erfahrungsgemäß gut handhabbar.",
+      "aiSecondaryProvider": null,
+      "aiSecondaryDecision": null,
+      "aiSecondaryConfidence": null,
+      "aiSecondaryReason": null,
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:42:03.238Z"
     },
     {
       "id": "hit11",
@@ -282,7 +624,34 @@
       "addedSinceLastFetch": true,
       "url": "https://service.bund.de/",
       "dataMode": "demo",
-      "dueDate": "2026-04-18"
+      "dueDate": "2026-04-18",
+      "linkStatus": "direct_notice",
+      "linkLabel": "Originalquelle öffnen",
+      "externalResolvedUrl": "https://service.bund.de/",
+      "sourceQuality": "hoch",
+      "sourceQualityReasons": [],
+      "extractedSpecs": {},
+      "directLinkValid": true,
+      "directLinkReason": "Valider Direktlink erkannt.",
+      "estimationStatus": null,
+      "estimationNote": null,
+      "operationallyUsable": true,
+      "aiEligible": true,
+      "aiBlockedReason": null,
+      "aiRecommendation": "Bid",
+      "aiReason": "Grünpflege/Baumpflege ist RUWE-Kerngeschäft; kommunale Flächen, kurzer Anfahrtsweg (4 km), attraktives Volumen (330k/18 Monate). Technische Eignung für Baumpflege (z.B. ETW/FLL) prüfen, aber grundsätzlich sehr passend.",
+      "aiConfidence": 0.86,
+      "aiProvider": "openai:gpt-5",
+      "aiPrimaryProvider": "openai:gpt-5",
+      "aiPrimaryDecision": "Bid",
+      "aiPrimaryConfidence": 0.86,
+      "aiPrimaryReason": "Grünpflege/Baumpflege ist RUWE-Kerngeschäft; kommunale Flächen, kurzer Anfahrtsweg (4 km), attraktives Volumen (330k/18 Monate). Technische Eignung für Baumpflege (z.B. ETW/FLL) prüfen, aber grundsätzlich sehr passend.",
+      "aiSecondaryProvider": null,
+      "aiSecondaryDecision": null,
+      "aiSecondaryConfidence": null,
+      "aiSecondaryReason": null,
+      "aiAnalysisStatus": "done",
+      "aiAnalyzedAt": "2026-04-10T03:42:26.482Z"
     }
   ],
   "sites": [
@@ -567,6 +936,487 @@
       "dataMode": "demo"
     }
   ],
+  "agentKeywords": [
+    {
+      "id": "ak_coord1",
+      "agentId": "coord1",
+      "positive": [
+        "schule",
+        "bezirk",
+        "glas",
+        "verwaltung"
+      ],
+      "negative": [
+        "planung",
+        "software"
+      ]
+    },
+    {
+      "id": "ak_coord2",
+      "agentId": "coord2",
+      "positive": [
+        "hausmeister",
+        "objektservice",
+        "liegenschaft"
+      ],
+      "negative": [
+        "ingenieur",
+        "bauplanung"
+      ]
+    },
+    {
+      "id": "ak_coord3",
+      "agentId": "coord3",
+      "positive": [
+        "winterdienst",
+        "reinigung",
+        "kommunal"
+      ],
+      "negative": [
+        "it",
+        "telekommunikation"
+      ]
+    },
+    {
+      "id": "ak_coord4",
+      "agentId": "coord4",
+      "positive": [
+        "sicherheit",
+        "wachdienst",
+        "objektschutz"
+      ],
+      "negative": [
+        "software",
+        "netzwerk"
+      ]
+    }
+  ],
+  "globalKeywords": {
+    "positive": [
+      "unterhaltsreinigung",
+      "hausmeister",
+      "winterdienst",
+      "objektschutz",
+      "grünpflege",
+      "glasreinigung"
+    ],
+    "negative": [
+      "architektur",
+      "planungsleistung",
+      "software",
+      "netzwerk",
+      "beratung"
+    ]
+  },
+  "costModels": [],
+  "costGaps": [],
+  "parameterMemory": [],
+  "opportunities": [],
+  "queryHistory": [],
+  "queryConfig": [
+    {
+      "id": "qcfg_1775791794921_251c8b",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Winterdienst",
+      "region": "Berlin",
+      "query": "Winterdienst Berlin",
+      "active": true,
+      "priority": "A"
+    },
+    {
+      "id": "qcfg_1775791794921_wbawhq",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Reinigung",
+      "region": "Berlin",
+      "query": "Reinigung Berlin",
+      "active": true,
+      "priority": "A"
+    },
+    {
+      "id": "qcfg_1775791794921_wh1jtz",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Glasreinigung",
+      "region": "Berlin",
+      "query": "Glasreinigung Berlin",
+      "active": true,
+      "priority": "A"
+    },
+    {
+      "id": "qcfg_1775791794921_z1f5um",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Hausmeister",
+      "region": "Magdeburg",
+      "query": "Hausmeister Magdeburg",
+      "active": true,
+      "priority": "B"
+    },
+    {
+      "id": "qcfg_1775791794921_2kkuja",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Sicherheit",
+      "region": "Magdeburg",
+      "query": "Sicherheit Magdeburg",
+      "active": true,
+      "priority": "A"
+    },
+    {
+      "id": "qcfg_1775791794921_efai6a",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_service_bund",
+      "trade": "Grünpflege",
+      "region": "Potsdam",
+      "query": "Grünpflege Potsdam",
+      "active": true,
+      "priority": "B"
+    },
+    {
+      "id": "qcfg_1775791794921_1tw8te",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_ted",
+      "trade": "Reinigung",
+      "region": "Berlin",
+      "query": "Reinigung Berlin",
+      "active": true,
+      "priority": "B"
+    },
+    {
+      "id": "qcfg_1775791794921_9ihjus",
+      "createdAt": "2026-04-10T03:29:54.921Z",
+      "updatedAt": "2026-04-10T03:29:54.921Z",
+      "sourceId": "src_dtvp",
+      "trade": "Winterdienst",
+      "region": "Leipzig",
+      "query": "Winterdienst Leipzig",
+      "active": true,
+      "priority": "B"
+    }
+  ],
+  "forecastSnapshots": [
+    {
+      "createdAt": "2026-04-10T06:29:43.556Z",
+      "hotspots": [
+        {
+          "region": "Magdeburg",
+          "trade": "Sicherheit",
+          "hitCount": 2,
+          "value": 2070000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 920000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Hausmeister",
+          "hitCount": 2,
+          "value": 800000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Zeitz",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 610000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf / Potsdam",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 440000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Glasreinigung",
+          "hitCount": 1,
+          "value": 380000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 330000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Schkeuditz",
+          "trade": "Winterdienst",
+          "hitCount": 1,
+          "value": 310000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Brandenburg Süd",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 290000,
+          "bidCount": 1,
+          "reviewCount": 0
+        }
+      ],
+      "totalOpportunityValue": 0,
+      "totalOpportunities": 0
+    },
+    {
+      "createdAt": "2026-04-10T06:29:12.548Z",
+      "hotspots": [
+        {
+          "region": "Magdeburg",
+          "trade": "Sicherheit",
+          "hitCount": 2,
+          "value": 2070000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 920000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Hausmeister",
+          "hitCount": 2,
+          "value": 800000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Zeitz",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 610000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf / Potsdam",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 440000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Glasreinigung",
+          "hitCount": 1,
+          "value": 380000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 330000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Schkeuditz",
+          "trade": "Winterdienst",
+          "hitCount": 1,
+          "value": 310000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Brandenburg Süd",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 290000,
+          "bidCount": 1,
+          "reviewCount": 0
+        }
+      ],
+      "totalOpportunityValue": 0,
+      "totalOpportunities": 0
+    },
+    {
+      "createdAt": "2026-04-10T03:58:53.299Z",
+      "hotspots": [
+        {
+          "region": "Magdeburg",
+          "trade": "Sicherheit",
+          "hitCount": 2,
+          "value": 2070000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 920000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Hausmeister",
+          "hitCount": 2,
+          "value": 800000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Zeitz",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 610000,
+          "bidCount": 0,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf / Potsdam",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 440000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Berlin",
+          "trade": "Glasreinigung",
+          "hitCount": 1,
+          "value": 380000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Stahnsdorf",
+          "trade": "Grünpflege",
+          "hitCount": 1,
+          "value": 330000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Schkeuditz",
+          "trade": "Winterdienst",
+          "hitCount": 1,
+          "value": 310000,
+          "bidCount": 1,
+          "reviewCount": 0
+        },
+        {
+          "region": "Brandenburg Süd",
+          "trade": "Reinigung",
+          "hitCount": 1,
+          "value": 290000,
+          "bidCount": 1,
+          "reviewCount": 0
+        }
+      ],
+      "totalOpportunityValue": 0,
+      "totalOpportunities": 0
+    },
+    {
+      "createdAt": "2026-04-10T03:30:17.439Z",
+      "hotspots": [],
+      "totalOpportunityValue": 0,
+      "totalOpportunities": 0
+    },
+    {
+      "createdAt": "2026-04-10T03:29:42.811Z",
+      "hotspots": [],
+      "totalOpportunityValue": 0,
+      "totalOpportunities": 0
+    }
+  ],
+  "connectors": [
+    {
+      "id": "src_service_bund",
+      "name": "service.bund.de",
+      "authType": "none",
+      "baseUrl": "https://www.service.bund.de",
+      "active": true,
+      "supportsFeed": true,
+      "supportsQuerySearch": true,
+      "supportsManualImport": true,
+      "supportsDeepLink": true,
+      "status": "idle",
+      "lastTestAt": null,
+      "lastTestOk": null,
+      "lastTestMessage": null
+    },
+    {
+      "id": "src_ted",
+      "name": "TED",
+      "authType": "none",
+      "baseUrl": "https://ted.europa.eu",
+      "active": true,
+      "supportsFeed": true,
+      "supportsQuerySearch": true,
+      "supportsManualImport": true,
+      "supportsDeepLink": true,
+      "status": "idle",
+      "lastTestAt": null,
+      "lastTestOk": null,
+      "lastTestMessage": null
+    },
+    {
+      "id": "src_berlin",
+      "name": "Vergabeplattform Berlin",
+      "authType": "none",
+      "baseUrl": "",
+      "active": true,
+      "supportsFeed": true,
+      "supportsQuerySearch": true,
+      "supportsManualImport": true,
+      "supportsDeepLink": false,
+      "status": "idle",
+      "lastTestAt": null,
+      "lastTestOk": null,
+      "lastTestMessage": null
+    },
+    {
+      "id": "src_dtvp",
+      "name": "DTVP",
+      "authType": "none",
+      "baseUrl": "",
+      "active": true,
+      "supportsFeed": true,
+      "supportsQuerySearch": true,
+      "supportsManualImport": true,
+      "supportsDeepLink": false,
+      "status": "idle",
+      "lastTestAt": null,
+      "lastTestOk": null,
+      "lastTestMessage": null
+    }
+  ],
+  "reviewTrail": [],
   "tenders": [
     {
       "id": "t1",
@@ -728,76 +1578,6 @@
       "dataMode": "demo"
     }
   ],
-  "globalKeywords": {
-    "positive": [
-      "unterhaltsreinigung",
-      "hausmeister",
-      "winterdienst",
-      "objektschutz",
-      "grünpflege",
-      "glasreinigung"
-    ],
-    "negative": [
-      "architektur",
-      "planungsleistung",
-      "software",
-      "netzwerk",
-      "beratung"
-    ]
-  },
-  "agentKeywords": [
-    {
-      "id": "ak_coord1",
-      "agentId": "coord1",
-      "positive": [
-        "schule",
-        "bezirk",
-        "glas",
-        "verwaltung"
-      ],
-      "negative": [
-        "planung",
-        "software"
-      ]
-    },
-    {
-      "id": "ak_coord2",
-      "agentId": "coord2",
-      "positive": [
-        "hausmeister",
-        "objektservice",
-        "liegenschaft"
-      ],
-      "negative": [
-        "ingenieur",
-        "bauplanung"
-      ]
-    },
-    {
-      "id": "ak_coord3",
-      "agentId": "coord3",
-      "positive": [
-        "winterdienst",
-        "reinigung",
-        "kommunal"
-      ],
-      "negative": [
-        "it",
-        "telekommunikation"
-      ]
-    },
-    {
-      "id": "ak_coord4",
-      "agentId": "coord4",
-      "positive": [
-        "sicherheit",
-        "wachdienst",
-        "objektschutz"
-      ],
-      "negative": [
-        "software",
-        "netzwerk"
-      ]
-    }
-  ]
+  "graphNodes": [],
+  "graphEdges": []
 }
