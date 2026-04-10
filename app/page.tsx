@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { buildDashboardWorkbench } from "@/lib/dashboardWorkbench";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
 import WorkbenchSidebarLeft from "@/components/dashboard/WorkbenchSidebarLeft";
 import WorkbenchSidebarRight from "@/components/dashboard/WorkbenchSidebarRight";
 import WorkbenchSearchBar from "@/components/dashboard/WorkbenchSearchBar";
+import WorkbenchInsights from "@/components/dashboard/WorkbenchInsights";
+import Link from "next/link";
 
 function q(v: string | undefined) {
   return v && v !== "Alle" ? v : undefined;
@@ -32,13 +33,17 @@ export default async function DashboardPage({
   });
 
   return (
-    <div className="wb-layout">
+    <div className="wb-shell">
       <WorkbenchSidebarLeft filters={data.leftFilters} current={current} />
 
       <main className="wb-main">
         <div>
-          <h1 className="h1"><span className="headline-accent">Ausschreibungen</span> gezielt steuern.</h1>
-          <p className="sub">Steuerzentrale nach Geschäftsfeld, Region, Entscheidung, Quelle, Frist und Potenzial.</p>
+          <h1 className="h1">
+            <span className="headline-accent">Ausschreibungen</span> gezielt steuern.
+          </h1>
+          <p className="sub">
+            Steuerzentrale nach Geschäftsfeld, Region, Entscheidung, Quelle, Frist und Potenzial.
+          </p>
         </div>
 
         <WorkbenchSearchBar
@@ -94,7 +99,7 @@ export default async function DashboardPage({
 
           <div className="card">
             <div className="section-title">Region × Geschäftsfeld Potenziale</div>
-            <div className="table-wrap" style={{ marginTop: 14 }}>
+            <div className="table-wrap" style={{ marginTop: 14, maxHeight: 520 }}>
               <table className="table">
                 <thead>
                   <tr>
@@ -127,61 +132,11 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <div className="grid grid-3">
-          <div className="card">
-            <div className="section-title">Besonders zu fokussieren</div>
-            <div className="table-wrap" style={{ marginTop: 14 }}>
-              <table className="table">
-                <thead><tr><th>Titel</th><th>Region</th><th>Volumen</th></tr></thead>
-                <tbody>
-                  {data.focusHits.map((x: any) => (
-                    <tr key={x.id}>
-                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.region || "")}`}>{x.title}</Link></td>
-                      <td>{x.region}</td>
-                      <td>{formatCurrencyCompact(x.estimatedValue)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="section-title">Höchste Laufzeiten</div>
-            <div className="table-wrap" style={{ marginTop: 14 }}>
-              <table className="table">
-                <thead><tr><th>Titel</th><th>Region</th><th>Laufzeit</th></tr></thead>
-                <tbody>
-                  {data.longRuns.map((x: any) => (
-                    <tr key={x.id}>
-                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}`}>{x.title}</Link></td>
-                      <td>{x.region}</td>
-                      <td>{x.durationMonths || 0} Mon.</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="section-title">No-Bid / Blocker</div>
-            <div className="table-wrap" style={{ marginTop: 14 }}>
-              <table className="table">
-                <thead><tr><th>Titel</th><th>Region</th><th>Grund</th></tr></thead>
-                <tbody>
-                  {data.noBidRows.map((x: any) => (
-                    <tr key={x.id}>
-                      <td><Link className="linkish" href={x.externalResolvedUrl || `/source-hits?region=${encodeURIComponent(x.region || "")}`}>{x.title}</Link></td>
-                      <td>{x.region}</td>
-                      <td>{x.noBidReason}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <WorkbenchInsights
+          focusHits={data.focusHits}
+          longRuns={data.longRuns}
+          noBidRows={data.noBidRows}
+        />
       </main>
 
       <WorkbenchSidebarRight items={data.rightHighlights} />
