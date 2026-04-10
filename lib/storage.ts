@@ -22,6 +22,8 @@ export type StoreCollection =
   | "parameterMemory"
   | "opportunities"
   | "queryHistory"
+  | "queryConfig"
+  | "forecastSnapshots"
   | "tenders"
   | "pipeline"
   | "references"
@@ -50,6 +52,8 @@ export type StoreShape = {
   parameterMemory: any[];
   opportunities: any[];
   queryHistory: any[];
+  queryConfig: any[];
+  forecastSnapshots: any[];
   tenders: any[];
   pipeline: any[];
   references: any[];
@@ -76,6 +80,8 @@ const EMPTY_STORE: StoreShape = {
   parameterMemory: [],
   opportunities: [],
   queryHistory: [],
+  queryConfig: [],
+  forecastSnapshots: [],
   tenders: [],
   pipeline: [],
   references: [],
@@ -147,7 +153,7 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","tenders",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
@@ -264,7 +270,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 export async function writeDb(next: StoreShape) {
   const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","tenders",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
   for (const name of names) {

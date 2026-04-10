@@ -44,6 +44,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             <div className="meta">AI-Confidence: {opportunity.aiConfidence ?? "-"}</div>
             <div className="meta">Direktlink valide: {opportunity.directLinkValid ? "ja" : "nein"}</div>
             <div className="meta">Operativ nutzbar: {opportunity.operationallyUsable ? "ja" : "nein"}</div>
+            <div className="meta">Fehlende Parameter: {(!opportunity.estimatedValue || opportunity.estimatedValue <= 0) ? "Volumen-/Kostenlogik prüfen" : "-"}</div>
           </div>
 
           <div className="toolbar" style={{ marginTop: 20 }}>
