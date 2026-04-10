@@ -4,6 +4,8 @@ import { readStore } from "@/lib/storage";
 import { formatCurrencyCompact } from "@/lib/numberFormat";
 import OpportunityEditor from "@/components/forms/OpportunityEditor";
 import OpportunityLearningForm from "@/components/forms/OpportunityLearningForm";
+import { calculateOpportunity } from "@/lib/calcEngine";
+import { listReviewTrail } from "@/lib/reviewTrail";
 
 export default async function OpportunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,6 +15,9 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   if (!opportunity) notFound();
 
   const sourceHit = (db.sourceHits || []).find((x: any) => x.id === opportunity.sourceHitId) || null;
+  const calc = await calculateOpportunity({ ...opportunity, extractedSpecs: sourceHit?.extractedSpecs || {} });
+  const reviews = await listReviewTrail(opportunity.id);
+
   const agents = Array.isArray(db.agents) && db.agents.length
     ? db.agents
     : [
@@ -44,6 +49,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             <div className="meta">AI-Confidence: {opportunity.aiConfidence ?? "-"}</div>
             <div className="meta">Direktlink valide: {opportunity.directLinkValid ? "ja" : "nein"}</div>
             <div className="meta">Operativ nutzbar: {opportunity.operationallyUsable ? "ja" : "nein"}</div>
+            <div className="meta">Kalkuliert: {calc.calculatedValue}</div>
+            <div className="meta">Kalkulationsmethode: {calc.calculationMethod}</div>
             <div className="meta">Fehlende Parameter: {(!opportunity.estimatedValue || opportunity.estimatedValue <= 0) ? "Volumen-/Kostenlogik prüfen" : "-"}</div>
           </div>
 
@@ -63,6 +70,25 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <div style={{ marginTop: 16 }}>
             <OpportunityEditor opportunity={opportunity} agents={agents} />
           </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="section-title">Review Trail</div>
+        <div className="table-wrap" style={{ marginTop: 14 }}>
+          <table className="table">
+            <thead><tr><th>Zeit</th><th>Typ</th><th>Review</th><th>Grund</th></tr></thead>
+            <tbody>
+              {reviews.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{r.createdAt}</td>
+                  <td>{r.type}</td>
+                  <td>{r.manualDecision || "-"}</td>
+                  <td>{r.manualReason || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

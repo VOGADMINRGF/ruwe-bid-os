@@ -24,6 +24,8 @@ export type StoreCollection =
   | "queryHistory"
   | "queryConfig"
   | "forecastSnapshots"
+  | "connectors"
+  | "reviewTrail"
   | "tenders"
   | "pipeline"
   | "references"
@@ -54,6 +56,8 @@ export type StoreShape = {
   queryHistory: any[];
   queryConfig: any[];
   forecastSnapshots: any[];
+  connectors: any[];
+  reviewTrail: any[];
   tenders: any[];
   pipeline: any[];
   references: any[];
@@ -82,6 +86,8 @@ const EMPTY_STORE: StoreShape = {
   queryHistory: [],
   queryConfig: [],
   forecastSnapshots: [],
+  connectors: [],
+  reviewTrail: [],
   tenders: [],
   pipeline: [],
   references: [],
@@ -153,7 +159,7 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const names: StoreCollection[] = [
       "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","tenders",
+      "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","connectors","reviewTrail","tenders",
       "pipeline","references","graphNodes","graphEdges"
     ];
 
@@ -270,7 +276,7 @@ export async function deleteById(name: StoreCollection, id: string) {
 export async function writeDb(next: StoreShape) {
   const names: StoreCollection[] = [
     "meta","config","sourceRegistry","sourceStats","sourceHits","sites","serviceAreas",
-    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","tenders",
+    "siteTradeRules","buyers","agents","agentKeywords","globalKeywords","costModels","costGaps","parameterMemory","opportunities","queryHistory","queryConfig","forecastSnapshots","connectors","reviewTrail","tenders",
     "pipeline","references","graphNodes","graphEdges"
   ];
   for (const name of names) {
