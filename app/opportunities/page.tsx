@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { readStore } from "@/lib/storage";
 
 export default async function OpportunitiesPage() {
@@ -8,8 +7,8 @@ export default async function OpportunitiesPage() {
   return (
     <div className="stack">
       <div>
-        <h1 className="h1"><span className="headline-accent">Opportunities</span> & Bearbeitung</h1>
-        <p className="sub">Operative Arbeitsliste für Treffer, AI-Empfehlungen und Vertriebsentscheidungen.</p>
+        <h1 className="h1">Opportunities</h1>
+        <p className="sub">Normierte Ausschreibungsobjekte mit Zuständigkeit, Kalkulationslogik und offenen Variablen.</p>
       </div>
 
       <div className="card">
@@ -19,25 +18,23 @@ export default async function OpportunitiesPage() {
               <tr>
                 <th>Titel</th>
                 <th>Region</th>
-                <th>Geschäftsfeld</th>
-                <th>Stage</th>
-                <th>Priorität</th>
+                <th>Gewerk</th>
+                <th>Entscheidung</th>
+                <th>Kalkulationsmodus</th>
+                <th>Offene Variablen</th>
                 <th>Owner</th>
-                <th>AI</th>
-                <th>Manuell</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row: any) => (
-                <tr key={row.id}>
-                  <td><Link className="linkish" href={`/opportunities/${row.id}`}>{row.title}</Link></td>
-                  <td>{row.region}</td>
-                  <td>{row.trade}</td>
-                  <td>{row.stage}</td>
-                  <td>{row.priority}</td>
-                  <td>{row.ownerId || "-"}</td>
-                  <td>{row.aiRecommendation || "-"}</td>
-                  <td>{row.manualDecision || "-"}</td>
+              {rows.map((x: any) => (
+                <tr key={x.id}>
+                  <td>{x.title}</td>
+                  <td>{x.region}</td>
+                  <td>{x.trade}</td>
+                  <td>{x.decision}</td>
+                  <td>{x.calcMode}</td>
+                  <td>{x.missingVariableCount}</td>
+                  <td>{x.ownerId || "-"}</td>
                 </tr>
               ))}
             </tbody>

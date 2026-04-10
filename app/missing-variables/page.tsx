@@ -1,14 +1,14 @@
 import { readStore } from "@/lib/storage";
 
-export default async function ParameterMemoryPage() {
+export default async function MissingVariablesPage() {
   const db = await readStore();
-  const rows = Array.isArray(db.parameterMemory) ? db.parameterMemory : [];
+  const rows = Array.isArray(db.costGaps) ? db.costGaps : [];
 
   return (
     <div className="stack">
       <div>
-        <h1 className="h1">Parameter Memory</h1>
-        <p className="sub">Regionale und gewerk-spezifische Sätze, Richtwerte und Kalkulationsparameter.</p>
+        <h1 className="h1">Missing Variables</h1>
+        <p className="sub">Gezielte Rückfragen für Volumen, Stunden, Fläche, Fristen, Direktlinks und Kalkulationsparameter.</p>
       </div>
 
       <div className="card">
@@ -16,21 +16,23 @@ export default async function ParameterMemoryPage() {
           <table className="table">
             <thead>
               <tr>
+                <th>Frage</th>
                 <th>Typ</th>
                 <th>Region</th>
                 <th>Gewerk</th>
-                <th>Wert</th>
-                <th>Status</th>
+                <th>Priorität</th>
+                <th>Owner</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((x: any, i: number) => (
-                <tr key={x.id || i}>
+              {rows.map((x: any) => (
+                <tr key={x.id}>
+                  <td>{x.question}</td>
                   <td>{x.type}</td>
                   <td>{x.region}</td>
                   <td>{x.trade}</td>
-                  <td>{x.value ?? "-"}</td>
-                  <td>{x.status || "-"}</td>
+                  <td>{x.priority}</td>
+                  <td>{x.ownerId || "-"}</td>
                 </tr>
               ))}
             </tbody>

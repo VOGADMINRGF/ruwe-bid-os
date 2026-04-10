@@ -7,6 +7,5 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const row = await upsertParameterMemory(body);
-  return NextResponse.json(row);
+  return NextResponse.json(await upsertParameterMemory(body));
 }

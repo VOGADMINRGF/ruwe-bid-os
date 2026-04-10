@@ -48,7 +48,7 @@ export default function WorkbenchInsights({
                 <td>
                   <Link
                     className="linkish"
-                    href={x.href || x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.regionNormalized || x.region || "")}`}
+                    href={String(x.href || x.externalResolvedUrl || `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.regionNormalized || x.region || "")}`)}
                   >
                     {x.title}
                   </Link>
