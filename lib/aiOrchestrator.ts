@@ -83,6 +83,12 @@ function shouldEscalate(hit: any, primary: ProviderResult) {
   return false;
 }
 
+function secondaryLooksUnreliable(secondary: ProviderResult) {
+  const reason = String(secondary.reason || "").trim();
+  const confidence = secondary.confidence ?? 0;
+  return !reason || reason.length < 18 || confidence <= 0.55;
+}
+
 function buildPrompt(hit: any, mode: "primary" | "second") {
   return `
 Du analysierst öffentliche Ausschreibungen für ein Bid-OS von RUWE.
@@ -259,10 +265,28 @@ export async function orchestrateHitAnalysis(hit: any) {
     secondary = await analyzeWithAnthropic(hit, anthropicModel, primary);
 
     if (secondary.ok) {
-      finalDecision = secondary.decision!;
-      finalReason = secondary.reason || primary.reason || "";
-      finalConfidence = secondary.confidence ?? primary.confidence ?? 0.5;
-      finalProvider = `${primary.ok ? primary.provider : "openai_failed"}+${secondary.provider}`;
+      const preferPrimary =
+        primary.ok &&
+        (
+          secondaryLooksUnreliable(secondary) ||
+          (
+            primary.decision === "Bid" &&
+            secondary.decision === "No-Go" &&
+            (primary.confidence ?? 0) >= 0.75
+          )
+        );
+
+      if (preferPrimary) {
+        finalDecision = primary.decision!;
+        finalReason = primary.reason || secondary.reason || "";
+        finalConfidence = primary.confidence ?? secondary.confidence ?? 0.5;
+        finalProvider = primary.provider;
+      } else {
+        finalDecision = secondary.decision!;
+        finalReason = secondary.reason || primary.reason || "";
+        finalConfidence = secondary.confidence ?? primary.confidence ?? 0.5;
+        finalProvider = `${primary.ok ? primary.provider : "openai_failed"}+${secondary.provider}`;
+      }
     } else if (primary.ok) {
       finalDecision = primary.decision!;
       finalReason = primary.reason || "";

@@ -1,21 +1,18 @@
 import { SourceAdapter } from "./base";
-import { ingestQueryResult } from "@/lib/queryIngest";
 
 export const dtvpAdapter: SourceAdapter = {
   sourceId: "src_dtvp",
-  canSearch: true,
+  canSearch: false,
   async runQuery(query: string) {
-    const res = await ingestQueryResult({
-      sourceId: "src_dtvp",
-      query
-    });
     return {
       sourceId: "src_dtvp",
       query,
-      inserted: !!res.inserted,
-      duplicate: !!res.duplicate,
+      inserted: false,
+      duplicate: false,
+      status: "unsupported",
+      reason: "DTVP benötigt Partner-/Portalzugang; ohne legalen Zugang derzeit nicht automatisiert suchfähig.",
       discoveryMode: "search_query",
-      row: res.row
+      row: null
     };
   }
 };

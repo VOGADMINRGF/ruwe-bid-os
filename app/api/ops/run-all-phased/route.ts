@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { runAllPhases } from "@/lib/runAllPhased";
 
-export async function POST(req: Request) {
-  const origin = new URL(req.url).origin;
-  const result = await runAllPhases(origin);
+export async function POST() {
+  const result = await runAllPhases();
   return NextResponse.json(result);
 }

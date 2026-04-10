@@ -21,13 +21,18 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
         <div className="card">
           <div className="section-title">{hit.title}</div>
           <div className="stack" style={{ marginTop: 16 }}>
-            <div className="meta">Region: {hit.region || "-"}</div>
-            <div className="meta">Geschäftsfeld: {hit.trade || "-"}</div>
+            <div className="meta">Region roh: {hit.regionRaw || hit.region || "-"}</div>
+            <div className="meta">Region normalisiert: {hit.regionNormalized || hit.region || "-"}</div>
+            <div className="meta">Gewerk roh: {hit.tradeRaw || hit.trade || "-"}</div>
+            <div className="meta">Gewerk normalisiert: {hit.tradeNormalized || hit.trade || "-"}</div>
+            <div className="meta">Vergabestelle: {hit.buyer || "-"}</div>
             <div className="meta">Quelle: {hit.sourceName || hit.sourceId || "-"}</div>
             <div className="meta">Volumen: {formatCurrencyCompact(hit.estimatedValue)}</div>
             <div className="meta">Volumenstatus: {hit.estimationStatus || (hit.estimatedValue ? "vorhanden" : "unbekannt")}</div>
             <div className="meta">Schätzhinweis: {hit.estimationNote || "-"}</div>
             <div className="meta">Laufzeit: {hit.durationMonths ? `${hit.durationMonths} Monate` : "-"}</div>
+            <div className="meta">Losstruktur: {hit.lotInfo || "-"}</div>
+            <div className="meta">Kalkulationsmodus: {hit.calcMode || "-"}</div>
             <div className="meta">AI: {hit.aiRecommendation || hit.status || "-"}</div>
             <div className="meta">AI-Begründung: {hit.aiReason || "-"}</div>
             <div className="meta">AI Provider: {hit.aiProvider || "-"}</div>
@@ -36,10 +41,14 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
             <div className="meta">Confidence: {hit.aiConfidence ?? "-"}</div>
             <div className="meta">Standortmatch: {hit.matchedSiteId || "-"}</div>
             <div className="meta">Distanz: {hit.distanceKm ?? "-"} km</div>
-            <div className="meta">Linkstatus: {hit.linkStatus || "-"}</div>
+            <div className="meta">Linkstatus: {hit.directLinkValid ? "valide" : "nicht valide"}</div>
+            <div className="meta">Link-Grund: {hit.directLinkReason || hit.linkStatus || "-"}</div>
             <div className="meta">Quellenqualität: {hit.sourceQuality || "-"}</div>
             <div className="meta">AI zulässig: {hit.aiEligible ? "ja" : "nein"}</div>
             <div className="meta">AI-Blockgrund: {hit.aiBlockedReason || "-"}</div>
+            <div className="meta">Vorfilter zugelassen: {hit.aiGateAllowed === true ? "ja" : hit.aiGateAllowed === false ? "nein" : "-"}</div>
+            <div className="meta">Vorfilter-Grund: {hit.aiGateReason || "-"}</div>
+            <div className="meta">Vorfilter-Score: {hit.aiGateScore ?? "-"}</div>
           </div>
 
           <div className="toolbar" style={{ marginTop: 20 }}>
@@ -59,7 +68,7 @@ export default async function SourceHitDetailPage({ params }: { params: Promise<
         <div className="card">
           <div className="section-title">Qualitäts- und Lückenprofil</div>
           <div className="stack" style={{ marginTop: 16 }}>
-            <div className="meta">Direktlink belastbar: {hit.linkStatus === "direct_notice" ? "ja" : "nein"}</div>
+            <div className="meta">Direktlink belastbar: {hit.directLinkValid === true ? "ja" : "nein"}</div>
             <div className="meta">Geschäftsfeld belastbar: {hit.trade && hit.trade !== "Sonstiges" ? "ja" : "nein"}</div>
             <div className="meta">Volumen belastbar: {hit.estimatedValue > 0 ? "ja" : "nein"}</div>
             <div className="meta">Standort fit: {hit.matchedSiteId ? "ja" : "nein"}</div>

@@ -22,7 +22,7 @@ const COORDINATORS = [
   {
     id: "coord_sachsen",
     name: "Koordinator Sachsen",
-    regions: ["Leipzig / Schkeuditz", "Zeitz", "Thüringen"],
+    regions: ["Leipzig / Schkeuditz", "Zeitz", "Thüringen", "Online"],
     trades: ["Winterdienst", "Reinigung", "Hausmeister", "Grünpflege"]
   }
 ];
@@ -32,17 +32,31 @@ const ASSISTS = [
   { id: "assist_calc", name: "Assistenz Kalkulation" }
 ];
 
+function hashIndex(seed: string, max: number) {
+  if (max <= 0) return 0;
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h << 5) - h + seed.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h) % max;
+}
+
 export function assignOpportunity(opportunity: any) {
+  const region = String(opportunity?.region || "");
+  const trade = String(opportunity?.trade || "");
+  const fallback = COORDINATORS[hashIndex(`${region}::${trade}`, COORDINATORS.length)];
+
   const exact =
     COORDINATORS.find((x) =>
-      x.regions.includes(opportunity.region) && x.trades.includes(opportunity.trade)
+      x.regions.includes(region) && x.trades.includes(trade)
     ) ||
-    COORDINATORS.find((x) => x.regions.includes(opportunity.region)) ||
-    COORDINATORS.find((x) => x.trades.includes(opportunity.trade)) ||
-    COORDINATORS[0];
+    COORDINATORS.find((x) => x.regions.includes(region)) ||
+    COORDINATORS.find((x) => x.trades.includes(trade)) ||
+    fallback;
 
   const support =
-    opportunity.calcMode === "unklar" || !opportunity.estimatedValue
+    opportunity.calcMode === "unklar" || !opportunity.estimatedValue || opportunity.directLinkValid !== true
       ? ASSISTS[0]
       : ASSISTS[1];
 

@@ -1,25 +1,23 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+import { createId, readStore, writeDb as writeStore } from "@/lib/storage";
 
 export async function readJsonDb() {
-  const raw = await fs.readFile(DB_PATH, "utf8");
-  return JSON.parse(raw);
+  return readStore();
 }
 
 export async function writeJsonDb(data: any) {
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2) + "\n", "utf8");
+  return writeStore(data);
 }
 
 export async function readDb() {
-  return readJsonDb();
+  return readStore();
+}
+
+export async function writeDbCompat(data: any) {
+  return writeStore(data);
 }
 
 export async function writeDb(data: any) {
-  return writeJsonDb(data);
+  return writeDbCompat(data);
 }
 
-export function createId(prefix: string) {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
-}
+export { createId };

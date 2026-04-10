@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { refreshAllSources } from "@/lib/sourceRefreshOrchestrator";
 import { readStore, replaceCollection } from "@/lib/storage";
-import { enrichSourceHitsForValidityAndEstimation } from "@/lib/aiEnrichment";
 
 function wantsRedirect(req: Request) {
   const url = new URL(req.url);
@@ -11,39 +11,49 @@ function providerStrategy() {
   return {
     primary: "openai",
     secondary: "anthropic",
-    note: "GPT für Routing, Kurzbewertung und Struktur. Claude für Tiefenanalyse, Begründung und Second Opinion."
+    note: "GPT primär, Claude als Zweitmeinung/Fallback."
   };
 }
 
 export async function GET(req: Request) {
   try {
+    const result = await refreshAllSources();
     const db = await readStore();
     const now = new Date().toISOString();
 
-    const meta = {
+    await replaceCollection("meta", {
       ...(db.meta || {}),
       lastSuccessfulIngestionAt: now,
-      lastSuccessfulIngestionSource: "TED Search API",
+      lastSuccessfulIngestionSource: "Source-Orchestrator",
       dataMode: "live",
-      dataValidityNote: "Live-Abruf aktiv. Werte basieren auf aktuellen Quellenläufen und AI-Vorprüfung.",
+      dataValidityNote: "Quellenabruf pro Quelle durchgeführt, Direktlink- und Query-Status je Quelle aktualisiert.",
       aiProviderStrategy: providerStrategy()
-    };
-
-    await replaceCollection("meta", meta);
-    await enrichSourceHitsForValidityAndEstimation();
+    });
 
     if (wantsRedirect(req)) {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    return NextResponse.json({ ok: true, fetched: (db.sourceHits || []).length, liveCount: (db.sourceHits || []).length });
+    return NextResponse.json({
+      ok: result.ok,
+      fetchedSources: result.summary.sourceCount,
+      insertedHits: result.summary.inserted,
+      usableHits: result.summary.usableHits,
+      invalidDirectLinks: result.summary.invalidDirectLinks,
+      sources: result.results
+    });
   } catch (error: any) {
     if (wantsRedirect(req)) {
       return NextResponse.redirect(new URL(`/?error=${encodeURIComponent(error?.message || "live_ingest_failed")}`, req.url));
     }
+
     return NextResponse.json(
       { ok: false, error: error?.message || "live_ingest_failed" },
       { status: 500 }
     );
   }
+}
+
+export async function POST(req: Request) {
+  return GET(req);
 }

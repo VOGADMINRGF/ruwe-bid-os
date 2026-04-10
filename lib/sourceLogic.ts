@@ -1,17 +1,93 @@
-export function sourceUsefulnessScore(stat: any) {
-  const found = stat?.tendersLast30Days || 0;
-  const pre = stat?.prefilteredLast30Days || 0;
-  const go = stat?.goLast30Days || 0;
-  const errors = stat?.errorCountLastRun || 0;
-  const dup = stat?.duplicateCountLastRun || 0;
-  return Math.max(0, found + pre * 2 + go * 4 - errors * 5 - dup);
+function n(v: any) {
+  const x = Number(v || 0);
+  return Number.isFinite(x) ? x : 0;
 }
 
-export function sourceHealth(stat: any) {
-  if (!stat) return "unbekannt";
-  if (stat.lastRunOk && (stat.errorCountLastRun || 0) === 0) return "gruen";
-  if ((stat.errorCountLastRun || 0) <= 1) return "gelb";
-  return "kritisch";
+function daysSince(iso: any) {
+  if (!iso) return 999;
+  const d = new Date(String(iso));
+  if (Number.isNaN(d.getTime())) return 999;
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)));
+}
+
+export function sourceUsefulnessExplain(input: any) {
+  const stat = input?.stat || input || {};
+  const hits = Array.isArray(input?.hits) ? input.hits : [];
+  const runs = Array.isArray(input?.queryRuns) ? input.queryRuns : [];
+
+  const found30 = n(stat?.tendersLast30Days);
+  const go30 = n(stat?.goLast30Days);
+  const pre30 = n(stat?.prefilteredLast30Days);
+  const inserted = n(stat?.tendersSinceLastFetch);
+  const usableLast = n(stat?.usableHitsLastRun);
+  const invalidLast = n(stat?.invalidLinksLastRun);
+  const errors = n(stat?.errorCountLastRun);
+  const duplicates = n(stat?.duplicateCountLastRun);
+
+  const hitUsable = hits.filter((x: any) => x?.directLinkValid === true).length;
+  const hitInvalid = hits.filter((x: any) => x?.directLinkValid !== true).length;
+  const linkBase = hitUsable + hitInvalid > 0 ? hitUsable + hitInvalid : usableLast + invalidLast;
+  const linkRatio = linkBase > 0 ? (hitUsable + usableLast) / (linkBase + usableLast + invalidLast) : 0;
+
+  const okRuns = runs.filter((x: any) => x?.status === "done" || x?.status === "ok").length;
+  const totalRuns = runs.length;
+  const runRatio = totalRuns > 0 ? okRuns / totalRuns : 0;
+  const staleDays = daysSince(stat?.lastFetchAt || stat?.lastRunAt);
+
+  let score = 35;
+  score += Math.min(20, found30 * 0.6 + inserted * 2);
+  score += Math.min(18, go30 * 4 + pre30 * 1.4);
+  score += Math.round(linkRatio * 18);
+  score += Math.round(runRatio * 10);
+  score -= Math.min(20, errors * 12 + duplicates * 1.8 + invalidLast * 0.8);
+  if (staleDays <= 1) score += 6;
+  else if (staleDays <= 3) score += 3;
+  else if (staleDays > 14) score -= 12;
+  else if (staleDays > 7) score -= 6;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const reasons: string[] = [];
+  if (linkRatio >= 0.7) reasons.push("Hoher Direktlink-Anteil in den Treffern.");
+  else if (linkRatio > 0) reasons.push("Direktlink-Qualität ist nur teilweise belastbar.");
+  else reasons.push("Direktlink-Qualität ist unzureichend.");
+
+  if (go30 + pre30 > 0) reasons.push("Quelle liefert operativ verwertbare Vorfilter-Signale.");
+  else reasons.push("Wenig verwertbare Vorfilter-Signale in den letzten Läufen.");
+
+  if (errors > 0) reasons.push("Fehler im letzten Lauf reduzieren die operative Verlässlichkeit.");
+  if (staleDays > 7) reasons.push("Abruf ist veraltet und sollte erneut laufen.");
+  if (totalRuns === 0) reasons.push("Noch kein dokumentierter Query-Lauf vorhanden.");
+
+  const bucket = score >= 75 ? "hoch" : score >= 50 ? "mittel" : "niedrig";
+
+  return {
+    score,
+    bucket,
+    reasons: reasons.slice(0, 3),
+    metrics: {
+      linkRatio,
+      runRatio,
+      staleDays,
+      errors,
+      duplicates,
+      found30,
+      go30,
+      pre30
+    }
+  };
+}
+
+export function sourceUsefulnessScore(input: any) {
+  return sourceUsefulnessExplain(input).score;
+}
+
+export function sourceHealth(stat: any, context?: any) {
+  if (!stat && !context) return "unbekannt";
+  const score = sourceUsefulnessScore({ stat, ...(context || {}) });
+  if ((stat?.lastRunOk === false && n(stat?.errorCountLastRun) >= 2) || score < 35) return "kritisch";
+  if (score < 65) return "gelb";
+  return "gruen";
 }
 
 export function smokeSummary(db: any) {

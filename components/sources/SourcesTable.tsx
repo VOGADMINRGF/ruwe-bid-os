@@ -6,6 +6,7 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
   const [rows, setRows] = useState(initialRows || []);
   const [runningAll, setRunningAll] = useState(false);
   const [runPhases, setRunPhases] = useState<any[]>([]);
+  const [runSummary, setRunSummary] = useState<any>(null);
   const [loadingMap, setLoadingMap] = useState<Record<string, number>>({});
 
   async function refreshOne(sourceId: string) {
@@ -24,8 +25,20 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
             ? {
                 ...x,
                 status: data.status || "done",
-                lastRunAt: new Date().toISOString(),
-                lastRunOk: true
+                lastRunAt: data.finishedAt || new Date().toISOString(),
+                lastRunOk: data.ok === true,
+                lastRunCount: data.matchedHits ?? x.lastRunCount ?? 0,
+                hitsTotal: (x.hitsTotal || 0) + (data.inserted || 0),
+                validLinks: data.usableHits ?? x.validLinks ?? 0,
+                invalidLinks: data.invalidDirectLinks ?? x.invalidLinks ?? 0,
+                operationalHits: data.usableHits ?? x.operationalHits ?? 0,
+                queryStatus: data.queryResults?.every((q: any) => q.status === "ok")
+                  ? "ok"
+                  : data.queryResults?.some((q: any) => q.status === "ok")
+                    ? "partial"
+                    : (data.queryResults?.[0]?.status || "no_results"),
+                resultStatus: data.status || x.resultStatus,
+                lastQuery: data.queryResults?.map((q: any) => q.query).filter(Boolean).join(" | ") || x.lastQuery
               }
             : x
         )
@@ -46,13 +59,44 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
 
   async function runAll() {
     setRunningAll(true);
-    setRunPhases([{ key: "fetch", status: "running" }]);
+    setRunPhases([{ key: "source_refresh", status: "running" }]);
+    setRunSummary(null);
+    try {
+      const res = await fetch("/api/ops/run-all-phased", { method: "POST" });
+      const data = await res.json();
 
-    const res = await fetch("/api/ops/run-all-phased", { method: "POST" });
-    const data = await res.json();
+      setRunPhases(data.phases || []);
+      setRunSummary(data.summary || null);
 
-    setRunPhases(data.phases || []);
-    setRunningAll(false);
+      const sourcePhase = (data.phases || []).find((x: any) => x.key === "source_refresh");
+      const sourceRows = sourcePhase?.result?.results || [];
+      if (Array.isArray(sourceRows) && sourceRows.length) {
+        setRows((prev) =>
+          prev.map((row: any) => {
+            const refreshed = sourceRows.find((x: any) => x.sourceId === row.id);
+            if (!refreshed) return row;
+            return {
+              ...row,
+              status: refreshed.status,
+              lastRunAt: refreshed.finishedAt || row.lastRunAt,
+              lastRunCount: refreshed.matchedHits ?? row.lastRunCount,
+              validLinks: refreshed.usableHits ?? row.validLinks,
+              invalidLinks: refreshed.invalidDirectLinks ?? row.invalidLinks,
+              operationalHits: refreshed.usableHits ?? row.operationalHits,
+              queryStatus: refreshed.queryResults?.every((q: any) => q.status === "ok")
+                ? "ok"
+                : refreshed.queryResults?.some((q: any) => q.status === "ok")
+                  ? "partial"
+                  : (refreshed.queryResults?.[0]?.status || row.queryStatus),
+              resultStatus: refreshed.status || row.resultStatus,
+              lastQuery: refreshed.queryResults?.map((q: any) => q.query).filter(Boolean).join(" | ") || row.lastQuery
+            };
+          })
+        );
+      }
+    } finally {
+      setRunningAll(false);
+    }
   }
 
   return (
@@ -66,6 +110,11 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
       {runPhases.length ? (
         <div className="card soft">
           <div className="section-title">Run-All Fortschritt</div>
+          {runSummary ? (
+            <div className="meta" style={{ marginTop: 8 }}>
+              Treffer: {runSummary.hits || 0} · Verwertbar: {runSummary.usableHits || 0} · Invalid Links: {runSummary.invalidLinks || 0}
+            </div>
+          ) : null}
           <div className="stack" style={{ marginTop: 14 }}>
             {runPhases.map((p: any, i: number) => (
               <div key={`${p.key}_${i}`} className="row" style={{ justifyContent: "space-between" }}>
@@ -85,8 +134,11 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
                 <th>Quelle</th>
                 <th>Status</th>
                 <th>Letzter Lauf</th>
-                <th>Treffer</th>
-                <th>Deep-Link</th>
+                <th>Treffer letzter Lauf</th>
+                <th>Verwertbar</th>
+                <th>Invalid Links</th>
+                <th>Query-Status</th>
+                <th>Score</th>
                 <th>Aktion</th>
               </tr>
             </thead>
@@ -97,7 +149,10 @@ export default function SourcesTable({ initialRows }: { initialRows: any[] }) {
                   <td>{row.status}</td>
                   <td>{row.lastRunAt || "-"}</td>
                   <td>{row.lastRunCount || 0}</td>
-                  <td>{row.supportsDeepLink ? "ja" : "nein / unklar"}</td>
+                  <td>{row.operationalHits ?? 0}</td>
+                  <td>{row.invalidLinks ?? 0}</td>
+                  <td>{row.queryStatus || "-"}</td>
+                  <td>{row.score ?? "-"}</td>
                   <td>
                     <div className="stack" style={{ gap: 8 }}>
                       <button className="linkish" type="button" onClick={() => refreshOne(row.id)}>

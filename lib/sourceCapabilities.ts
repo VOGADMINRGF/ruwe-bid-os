@@ -6,11 +6,17 @@ export async function ensureSourceCapabilities() {
 
   const next = rows.map((x: any) => {
     const id = String(x.id || "");
+    const defaultSearch = ["src_service_bund", "src_ted", "src_berlin"].includes(id);
     return {
-      supportsFeed: true,
-      supportsQuerySearch: ["src_service_bund", "src_ted", "src_berlin", "src_dtvp"].includes(id),
-      supportsManualImport: true,
-      supportsDeepLink: !!x.supportsDeepLink,
+      supportsFeed: typeof x.supportsFeed === "boolean" ? x.supportsFeed : true,
+      supportsQuerySearch:
+        typeof x.supportsQuerySearch === "boolean"
+          ? x.supportsQuerySearch
+          : defaultSearch,
+      supportsManualImport:
+        typeof x.supportsManualImport === "boolean" ? x.supportsManualImport : true,
+      supportsDeepLink:
+        typeof x.supportsDeepLink === "boolean" ? x.supportsDeepLink : false,
       ...x
     };
   });

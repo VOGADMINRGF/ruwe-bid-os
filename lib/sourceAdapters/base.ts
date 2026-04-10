@@ -3,6 +3,8 @@ export type SourceAdapterResult = {
   query: string;
   inserted: boolean;
   duplicate: boolean;
+  status?: string;
+  reason?: string | null;
   discoveryMode: "search_query" | "manual_import" | "feed";
   row?: any;
 };

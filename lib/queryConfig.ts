@@ -12,13 +12,34 @@ const DEFAULT_ROWS = [
   { sourceId: "src_service_bund", trade: "Sicherheit", region: "Magdeburg", query: "Sicherheit Magdeburg", active: true, priority: "A" },
   { sourceId: "src_service_bund", trade: "Grünpflege", region: "Potsdam", query: "Grünpflege Potsdam", active: true, priority: "B" },
   { sourceId: "src_ted", trade: "Reinigung", region: "Berlin", query: "Reinigung Berlin", active: true, priority: "B" },
-  { sourceId: "src_dtvp", trade: "Winterdienst", region: "Leipzig", query: "Winterdienst Leipzig", active: true, priority: "B" }
+  { sourceId: "src_ted", trade: "Winterdienst", region: "Leipzig", query: "Winterdienst Leipzig", active: true, priority: "B" },
+  { sourceId: "src_berlin", trade: "Reinigung", region: "Berlin", query: "Reinigung Berlin", active: true, priority: "A" },
+  { sourceId: "src_berlin", trade: "Winterdienst", region: "Berlin", query: "Winterdienst Berlin", active: true, priority: "A" }
 ];
 
 export async function ensureQueryConfig() {
   const db = await readStore();
   const rows = Array.isArray(db.queryConfig) ? db.queryConfig : [];
-  if (rows.length) return rows;
+  if (rows.length) {
+    const existing = new Set(
+      rows.map((x: any) => `${String(x.sourceId || "")}::${String(x.query || "").toLowerCase()}`)
+    );
+    const missing = DEFAULT_ROWS.filter(
+      (x) => !existing.has(`${x.sourceId}::${String(x.query).toLowerCase()}`)
+    ).map((x) => ({
+      id: nextId(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...x
+    }));
+
+    if (missing.length) {
+      const merged = [...rows, ...missing];
+      await replaceCollection("queryConfig" as any, merged);
+      return merged;
+    }
+    return rows;
+  }
 
   const next = DEFAULT_ROWS.map((x) => ({
     id: nextId(),

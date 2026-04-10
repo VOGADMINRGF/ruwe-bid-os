@@ -40,6 +40,7 @@ export default async function QueryCenterPage() {
                   <th>Titel</th>
                   <th>Quelle</th>
                   <th>Query</th>
+                  <th>Direktlink</th>
                 </tr>
               </thead>
               <tbody>
@@ -48,6 +49,7 @@ export default async function QueryCenterPage() {
                     <td>{row.title}</td>
                     <td>{row.sourceId}</td>
                     <td>{row.queryUsed || "-"}</td>
+                    <td>{row.directLinkValid ? "valide" : "nicht valide"}</td>
                   </tr>
                 ))}
               </tbody>

@@ -25,6 +25,9 @@ export type StoreCollection =
   | "queryConfig"
   | "forecastSnapshots"
   | "connectors"
+  | "learningRules"
+  | "opportunityNotes"
+  | "auditLogs"
   | "reviewTrail"
   | "tenders"
   | "pipeline"
@@ -57,6 +60,9 @@ export type StoreShape = {
   queryConfig: any[];
   forecastSnapshots: any[];
   connectors: any[];
+  learningRules: any[];
+  opportunityNotes: any[];
+  auditLogs: any[];
   reviewTrail: any[];
   tenders: any[];
   pipeline: any[];
@@ -87,6 +93,9 @@ const EMPTY_STORE: StoreShape = {
   queryConfig: [],
   forecastSnapshots: [],
   connectors: [],
+  learningRules: [],
+  opportunityNotes: [],
+  auditLogs: [],
   reviewTrail: [],
   tenders: [],
   pipeline: [],
@@ -94,6 +103,28 @@ const EMPTY_STORE: StoreShape = {
   graphNodes: [],
   graphEdges: []
 };
+
+function sanitizeMongoValue(value: any): any {
+  if (value == null) return value;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map((item) => sanitizeMongoValue(item));
+
+  if (value?._bsontype === "ObjectId") {
+    try {
+      return String(value);
+    } catch {
+      return null;
+    }
+  }
+
+  const out: Record<string, any> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (key === "_id") continue;
+    out[key] = sanitizeMongoValue(item);
+  }
+  return out;
+}
 
 function normalizeStore(db: any): StoreShape {
   return {
@@ -124,6 +155,9 @@ function normalizeStore(db: any): StoreShape {
     queryConfig: Array.isArray(db?.queryConfig) ? db.queryConfig : [],
     forecastSnapshots: Array.isArray(db?.forecastSnapshots) ? db.forecastSnapshots : [],
     connectors: Array.isArray(db?.connectors) ? db.connectors : [],
+    learningRules: Array.isArray(db?.learningRules) ? db.learningRules : [],
+    opportunityNotes: Array.isArray(db?.opportunityNotes) ? db.opportunityNotes : [],
+    auditLogs: Array.isArray(db?.auditLogs) ? db.auditLogs : [],
     reviewTrail: Array.isArray(db?.reviewTrail) ? db.reviewTrail : [],
     tenders: Array.isArray(db?.tenders) ? db.tenders : [],
     pipeline: Array.isArray(db?.pipeline) ? db.pipeline : [],
@@ -190,6 +224,9 @@ const ALL_COLLECTIONS: StoreCollection[] = [
   "queryConfig",
   "forecastSnapshots",
   "connectors",
+  "learningRules",
+  "opportunityNotes",
+  "auditLogs",
   "reviewTrail",
   "tenders",
   "pipeline",
@@ -205,9 +242,10 @@ async function readMongoStore(): Promise<StoreShape | null> {
   try {
     const out: any = {};
     for (const name of ALL_COLLECTIONS) {
-      const rows = await conn.db.collection(name).find({}).toArray();
+      const rowsRaw = await conn.db.collection(name).find({}).toArray();
+      const rows = sanitizeMongoValue(rowsRaw);
       if (name === "meta" || name === "config" || name === "globalKeywords") {
-        out[name] = rows[0] || (name === "globalKeywords" ? { positive: [], negative: [] } : {});
+        out[name] = (rows[0] || (name === "globalKeywords" ? { positive: [], negative: [] } : {}));
       } else {
         out[name] = rows;
       }
@@ -225,9 +263,11 @@ async function readMongoStore(): Promise<StoreShape | null> {
 
 function asInsertDocs(value: any): any[] {
   if (Array.isArray(value)) {
-    return value.filter((x) => x && typeof x === "object" && !Array.isArray(x));
+    return value
+      .filter((x) => x && typeof x === "object" && !Array.isArray(x))
+      .map((x) => sanitizeMongoValue(x));
   }
-  if (value && typeof value === "object") return [value];
+  if (value && typeof value === "object") return [sanitizeMongoValue(value)];
   return [];
 }
 

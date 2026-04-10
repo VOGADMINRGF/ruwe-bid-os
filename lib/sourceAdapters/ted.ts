@@ -14,6 +14,8 @@ export const tedAdapter: SourceAdapter = {
       query,
       inserted: !!res.inserted,
       duplicate: !!res.duplicate,
+      status: (res as any).status || null,
+      reason: (res as any).reason || null,
       discoveryMode: "search_query",
       row: res.row
     };

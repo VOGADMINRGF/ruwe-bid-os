@@ -1,5 +1,5 @@
 import { readStore } from "@/lib/storage";
-import { sourceHealth, sourceUsefulnessScore } from "@/lib/sourceLogic";
+import { sourceHealth, sourceUsefulnessExplain } from "@/lib/sourceLogic";
 import { formatDateTime, dataModeLabel, dataModeBadgeClass } from "@/lib/format";
 
 function healthBadge(health: string) {
@@ -12,15 +12,23 @@ export default async function MonitoringPage() {
   const db = await readStore();
   const registry = db.sourceRegistry || [];
   const stats = db.sourceStats || [];
+  const hits = db.sourceHits || [];
+  const queryHistory = db.queryHistory || [];
   const mode = db.meta?.dataMode || "demo";
 
   const rows = registry.map((src: any) => {
-    const stat = stats.find((s: any) => s.id === src.id) || {};
+    const stat = stats.find((s: any) => s.id === src.id || s.sourceId === src.id) || {};
+    const explain = sourceUsefulnessExplain({
+      stat,
+      hits: hits.filter((x: any) => x.sourceId === src.id),
+      queryRuns: queryHistory.filter((x: any) => x.sourceId === src.id).slice(0, 8)
+    });
     return {
       ...src,
       ...stat,
-      health: sourceHealth(stat),
-      usefulnessScore: sourceUsefulnessScore(stat)
+      health: sourceHealth(stat, { hits: hits.filter((x: any) => x.sourceId === src.id) }),
+      usefulnessScore: explain.score,
+      usefulnessReasons: explain.reasons
     };
   });
 
@@ -48,6 +56,7 @@ export default async function MonitoringPage() {
               <th>Vorausgewählt</th>
               <th>Go</th>
               <th>Score</th>
+              <th>Erklärung</th>
             </tr>
           </thead>
           <tbody>
@@ -63,6 +72,7 @@ export default async function MonitoringPage() {
                 <td>{row.prefilteredLast30Days || 0}</td>
                 <td>{row.goLast30Days || 0}</td>
                 <td>{row.usefulnessScore}</td>
+                <td>{(row.usefulnessReasons || []).join(" ") || "-"}</td>
               </tr>
             ))}
           </tbody>

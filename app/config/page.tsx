@@ -1,7 +1,9 @@
-import { readDb } from "@/lib/db";
+import { readStore } from "@/lib/storage";
+import { ensureRolesModel } from "@/lib/roles";
 
 export default async function ConfigPage() {
-  const db = await readDb();
+  await ensureRolesModel();
+  const db = await readStore();
 
   return (
     <div className="stack">

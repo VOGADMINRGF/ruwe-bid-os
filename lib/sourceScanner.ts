@@ -1,6 +1,8 @@
 import { readStore, replaceCollection } from "@/lib/storage";
 import { strictDirectLink } from "@/lib/strictLinkValidation";
 import { isAiCandidate } from "@/lib/aiGatekeeper";
+import { normalizeRegionFromHit } from "@/lib/regionNormalization";
+import { classifyTrade, detectCalcMode } from "@/lib/tradeClassification";
 
 function text(v: any) {
   return String(v || "").toLowerCase();
@@ -30,10 +32,13 @@ export async function rescanSourceHits() {
       hit?.trade && hit.trade !== "Sonstiges"
         ? hit.trade
         : inferTrade(`${hit?.title || ""} ${hit?.description || ""}`);
+    const tradeNormalized = classifyTrade({ ...hit, trade: inferredTrade });
+    const regionNormalized = normalizeRegionFromHit(hit);
+    const calcMode = detectCalcMode({ title: hit?.title, aiReason: hit?.aiReason, aiSummary: hit?.description });
 
     const gate = isAiCandidate({
       ...hit,
-      trade: inferredTrade,
+      trade: tradeNormalized,
       directLinkValid: direct.valid,
       externalResolvedUrl: direct.valid ? direct.url : null,
       operationallyUsable: direct.valid
@@ -44,11 +49,19 @@ export async function rescanSourceHits() {
 
     hits[i] = {
       ...hit,
-      trade: inferredTrade,
+      region: regionNormalized || hit?.region || "Unbekannt",
+      regionRaw: String(hit?.regionRaw || hit?.region || ""),
+      regionNormalized,
+      trade: tradeNormalized,
+      tradeRaw: String(hit?.tradeRaw || hit?.trade || inferredTrade),
+      tradeNormalized,
       directLinkValid: direct.valid,
       directLinkReason: direct.reason,
+      linkStatus: direct.status,
+      linkLabel: direct.valid ? "Originalquelle öffnen" : "Kein belastbarer Direktlink",
       externalResolvedUrl: direct.valid ? direct.url : null,
       operationallyUsable: direct.valid,
+      calcMode,
       aiEligible: gate.allowed,
       aiBlockedReason: gate.allowed ? null : gate.reason
     };

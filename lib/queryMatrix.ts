@@ -33,7 +33,7 @@ export async function buildQueryMatrix() {
 
   const queries: { sourceId: string; trade: string; region: string; query: string }[] = [];
 
-  const searchableSources = ["src_service_bund", "src_ted", "src_berlin", "src_dtvp"];
+  const searchableSources = ["src_service_bund", "src_ted", "src_berlin"];
 
   for (const sourceId of searchableSources) {
     for (const trade of trades) {

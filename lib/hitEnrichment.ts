@@ -1,6 +1,8 @@
 import { readStore, replaceCollection } from "@/lib/storage";
 import { strictDirectLink } from "@/lib/strictLinkValidation";
 import { upsertParameterMemory, findParameter } from "@/lib/parameterMemory";
+import { normalizeRegionFromHit } from "@/lib/regionNormalization";
+import { classifyTrade, detectCalcMode } from "@/lib/tradeClassification";
 
 function n(v: any) {
   const x = Number(v || 0);
@@ -44,6 +46,10 @@ export async function enrichHitsStrictAndLearn() {
     const hit = hits[i];
     const text = `${hit?.title || ""} ${hit?.description || ""}`;
     const inferredTrade = hit?.trade && hit.trade !== "Sonstiges" ? hit.trade : inferTrade(text);
+    const tradeNormalized = classifyTrade({ ...hit, trade: inferredTrade, title: hit?.title, description: hit?.description });
+    const regionNormalized = normalizeRegionFromHit(hit);
+    const regionRaw = String(hit?.regionRaw || hit?.region || hit?.city || "");
+    const calcMode = detectCalcMode({ title: hit?.title, aiReason: hit?.aiReason, aiSummary: hit?.description });
     const specs = extractSpecs(text);
     const direct = strictDirectLink(hit);
 
@@ -72,7 +78,7 @@ export async function enrichHitsStrictAndLearn() {
         }
       } else {
         await upsertParameterMemory({
-          region: hit?.region || "Unbekannt",
+          region: regionNormalized || hit?.region || "Unbekannt",
           trade: inferredTrade,
           parameterType: "cost",
           parameterKey: "default_rate",
@@ -87,14 +93,22 @@ export async function enrichHitsStrictAndLearn() {
 
     hits[i] = {
       ...hit,
-      trade: inferredTrade,
+      region: regionNormalized || hit?.region || "Unbekannt",
+      regionRaw,
+      regionNormalized,
+      trade: tradeNormalized,
+      tradeRaw: String(hit?.tradeRaw || hit?.trade || inferredTrade),
+      tradeNormalized,
       extractedSpecs: specs,
       directLinkValid: direct.valid,
       directLinkReason: direct.reason,
+      linkStatus: direct.status,
+      linkLabel: direct.valid ? "Originalquelle öffnen" : "Kein belastbarer Direktlink",
       externalResolvedUrl: direct.valid ? direct.url : null,
       estimatedValue,
       estimationStatus,
       estimationNote,
+      calcMode,
       operationallyUsable: direct.valid
     };
     changed += 1;

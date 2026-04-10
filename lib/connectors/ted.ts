@@ -1,8 +1,23 @@
-export async function fetchTedNotices() {
+function buildTedQuery(queries: string[] = []) {
+  const tokens = [...new Set(
+    queries
+      .flatMap((query) => String(query || "").toLowerCase().split(" "))
+      .map((x) => x.trim())
+      .filter((x) => x.length >= 4)
+  )].slice(0, 8);
+
+  if (!tokens.length) {
+    return "title ~ \"reinigung\" OR title ~ \"hausmeister\" OR title ~ \"winterdienst\" OR title ~ \"sicherheitsdienst\" OR title ~ \"grünpflege\"";
+  }
+
+  return tokens.map((token) => `title ~ "${token.replace(/"/g, "")}"`).join(" OR ");
+}
+
+export async function fetchTedNotices(queries: string[] = []) {
   const endpoint = "https://api.ted.europa.eu/v3/notices/search";
 
   const body = {
-    query: "title ~ \"reinigung\" OR title ~ \"hausmeister\" OR title ~ \"winterdienst\" OR title ~ \"sicherheitsdienst\" OR title ~ \"grünpflege\"",
+    query: buildTedQuery(queries),
     fields: [
       "notice-title",
       "publication-number",

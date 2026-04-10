@@ -25,6 +25,8 @@ export function buildProposalWorkbench(detail: any) {
   const nextAction =
     openVars.length > 0
       ? openVars[0].question
+      : opp.nextStep
+      ? opp.nextStep
       : opp.decision === "Bid"
       ? "Angebotsstruktur und Kalkulation vorbereiten."
       : "Fall beobachten oder Entscheidung dokumentieren.";
@@ -49,7 +51,9 @@ export function buildProposalWorkbench(detail: any) {
         calcMode: opp.calcMode,
         stage: opp.stage,
         dueDate: opp.dueDate || "-",
-        directLink: opp.externalResolvedUrl || hit?.externalResolvedUrl || hit?.url || null
+        directLink: opp.directLinkValid === true
+          ? (opp.externalResolvedUrl || hit?.externalResolvedUrl || null)
+          : null
       },
       variables: openVars,
       parameters: availableRegionalParams,

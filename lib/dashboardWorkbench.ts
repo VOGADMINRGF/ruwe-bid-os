@@ -1,7 +1,4 @@
 import { readStore } from "@/lib/storage";
-import { safeHref, toPlain } from "@/lib/serializers";
-import { normalizeRegionFromHit } from "@/lib/regionNormalization";
-import { classifyTrade } from "@/lib/tradeClassification";
 
 const CORE_TRADES = [
   "Reinigung",
@@ -19,7 +16,7 @@ function n(v: any) {
 
 function formatReason(hit: any) {
   if (!hit) return "unbekannt";
-  if (!hit.directLinkValid) return "Direktlink unklar";
+  if (!hit.directLinkValid) return hit.directLinkReason || "Direktlink unklar";
   if (!hit.trade || hit.trade === "Sonstiges") return "kein passendes Gewerk";
   if (n(hit.estimatedValue) <= 0) return "Volumen unklar";
   if (hit.operationallyUsable === false) return "operativ unklar";
@@ -36,6 +33,7 @@ export async function buildDashboardWorkbench(filters?: {
   const db = await readStore();
   const hits = Array.isArray(db.sourceHits) ? db.sourceHits : [];
   const opportunities = Array.isArray(db.opportunities) ? db.opportunities : [];
+  const costGaps = Array.isArray(db.costGaps) ? db.costGaps : [];
   const sites = Array.isArray(db.sites) ? db.sites : [];
   const rules = Array.isArray(db.siteTradeRules) ? db.siteTradeRules : [];
 
@@ -45,10 +43,10 @@ export async function buildDashboardWorkbench(filters?: {
     rows = rows.filter((x: any) => String(x.trade || "") === filters.trade);
   }
   if (filters?.region && filters.region !== "Alle") {
-    rows = rows.filter((x: any) => String(x.region || "") === filters.region);
+    rows = rows.filter((x: any) => String(x.regionNormalized || x.region || "") === filters.region);
   }
   if (filters?.decision && filters.decision !== "Alle") {
-    rows = rows.filter((x: any) => String(x.aiRecommendation || x.aiDecision || "observed") === filters.decision);
+    rows = rows.filter((x: any) => String(x.aiRecommendation || x.aiDecision || "No-Go") === filters.decision);
   }
   if (filters?.sourceId && filters.sourceId !== "Alle") {
     rows = rows.filter((x: any) => String(x.sourceId || "") === filters.sourceId);
@@ -63,7 +61,7 @@ export async function buildDashboardWorkbench(filters?: {
   }
 
   const availableRegions = [...new Set(
-    rows.map((x: any) => x.region).filter(Boolean)
+    rows.map((x: any) => x.regionNormalized || x.region).filter(Boolean)
   )].sort();
 
   const availableSources = [...new Set(
@@ -82,7 +80,7 @@ export async function buildDashboardWorkbench(filters?: {
 
     const byRegion = new Map<string, { region: string; value: number; count: number }>();
     for (const hit of tradeHits) {
-      const region = hit.region || "Unbekannt";
+      const region = hit.regionNormalized || hit.region || "Unbekannt";
       const prev = byRegion.get(region) || { region, value: 0, count: 0 };
       prev.value += n(hit.estimatedValue);
       prev.count += 1;
@@ -104,7 +102,7 @@ export async function buildDashboardWorkbench(filters?: {
 
   const regionTrade = new Map<string, any>();
   for (const hit of rows) {
-    const region = hit.region || "Unbekannt";
+    const region = hit.regionNormalized || hit.region || "Unbekannt";
     const trade = hit.trade || "Sonstiges";
     const key = `${region}__${trade}`;
     const prev = regionTrade.get(key) || {
@@ -133,7 +131,7 @@ export async function buildDashboardWorkbench(filters?: {
     .slice(0, 24);
 
   const focusHits = rows
-    .filter((x: any) => x.aiRecommendation === "Bid")
+    .filter((x: any) => x.aiRecommendation === "Bid" && x.directLinkValid === true)
     .sort((a: any, b: any) => n(b.estimatedValue) - n(a.estimatedValue))
     .slice(0, 8);
 
@@ -146,7 +144,7 @@ export async function buildDashboardWorkbench(filters?: {
     .filter((x: any) => x.aiRecommendation !== "Bid")
     .map((x: any) => ({
       ...x,
-      noBidReason: formatReason(x)
+      noBidReason: x.noBidReason || formatReason(x)
     }))
     .sort((a: any, b: any) => n(b.estimatedValue) - n(a.estimatedValue))
     .slice(0, 8);
@@ -158,15 +156,19 @@ export async function buildDashboardWorkbench(filters?: {
       dueInDays: Math.floor((new Date(x.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     }))
     .sort((a: any, b: any) => a.dueInDays - b.dueInDays);
+  const due7 = deadlines.filter((x: any) => x.dueInDays >= 0 && x.dueInDays <= 7).length;
+  const due14 = deadlines.filter((x: any) => x.dueInDays >= 0 && x.dueInDays <= 14).length;
+  const due30 = deadlines.filter((x: any) => x.dueInDays >= 0 && x.dueInDays <= 30).length;
+  const openVariables = costGaps.filter((x: any) => x.status !== "beantwortet").length;
 
   const coverageGaps = rows
-    .filter((x: any) => !x.siteMatchId && x.aiRecommendation !== "Bid")
+    .filter((x: any) => !x.matchedSiteId && x.aiRecommendation !== "Bid")
     .slice(0, 8);
 
   const leftFilters = {
     trades: ["Alle", ...CORE_TRADES],
     regions: ["Alle", ...availableRegions],
-    decisions: ["Alle", "Bid", "Prüfen", "No-Bid", "observed"],
+    decisions: ["Alle", "Bid", "Prüfen", "No-Bid", "No-Go"],
     sources: ["Alle", ...availableSources]
   };
 
@@ -174,28 +176,28 @@ export async function buildDashboardWorkbench(filters?: {
     focusHits[0]
       ? {
           label: "Größtes Bid-Potenzial",
-          href: `/source-hits?trade=${encodeURIComponent(focusHits[0].trade || "")}&region=${encodeURIComponent(focusHits[0].region || "")}`,
+          href: `/source-hits?trade=${encodeURIComponent(focusHits[0].trade || "")}&region=${encodeURIComponent(focusHits[0].regionNormalized || focusHits[0].region || "")}&decision=Bid`,
           value: focusHits[0].title || "-"
         }
       : null,
     longRuns[0]
       ? {
           label: "Längste Laufzeit",
-          href: `/source-hits?trade=${encodeURIComponent(longRuns[0].trade || "")}&region=${encodeURIComponent(longRuns[0].region || "")}`,
+          href: `/source-hits?trade=${encodeURIComponent(longRuns[0].trade || "")}&region=${encodeURIComponent(longRuns[0].regionNormalized || longRuns[0].region || "")}`,
           value: `${longRuns[0].title || "-"} · ${longRuns[0].durationMonths || 0} Mon.`
         }
       : null,
     noBidRows[0]
       ? {
           label: "Wichtigster No-Bid-Blocker",
-          href: `/source-hits?region=${encodeURIComponent(noBidRows[0].region || "")}&trade=${encodeURIComponent(noBidRows[0].trade || "")}`,
+          href: `/source-hits?region=${encodeURIComponent(noBidRows[0].regionNormalized || noBidRows[0].region || "")}&trade=${encodeURIComponent(noBidRows[0].trade || "")}`,
           value: `${noBidRows[0].trade || "-"} · ${noBidRows[0].noBidReason}`
         }
       : null,
     coverageGaps[0]
       ? {
           label: "Größte Abdeckungslücke",
-          href: `/source-hits?region=${encodeURIComponent(coverageGaps[0].region || "")}`,
+          href: `/source-hits?region=${encodeURIComponent(coverageGaps[0].regionNormalized || coverageGaps[0].region || "")}`,
           value: coverageGaps[0].title || "-"
         }
       : null
@@ -205,13 +207,17 @@ export async function buildDashboardWorkbench(filters?: {
     kpis: {
       totalVolume: rows.reduce((s: number, x: any) => s + n(x.estimatedValue), 0),
       recommendedVolume: rows.filter((x: any) => x.aiRecommendation === "Bid").reduce((s: number, x: any) => s + n(x.estimatedValue), 0),
-      noBidVolume: rows.filter((x: any) => x.aiRecommendation !== "Bid").reduce((s: number, x: any) => s + n(x.estimatedValue), 0),
+      noBidVolume: rows.filter((x: any) => x.aiRecommendation === "No-Bid" || x.aiRecommendation === "No-Go").reduce((s: number, x: any) => s + n(x.estimatedValue), 0),
       hitCount: rows.length,
       bidCount: rows.filter((x: any) => x.aiRecommendation === "Bid").length,
       reviewCount: rows.filter((x: any) => x.aiRecommendation === "Prüfen" || x.aiRecommendation === "manual_review").length,
-      noBidCount: rows.filter((x: any) => x.aiRecommendation !== "Bid").length,
+      noBidCount: rows.filter((x: any) => x.aiRecommendation === "No-Bid" || x.aiRecommendation === "No-Go").length,
       siteCount: sites.length,
-      ruleCount: rules.length
+      ruleCount: rules.length,
+      due7,
+      due14,
+      due30,
+      openVariables
     },
     leftFilters,
     rightHighlights,

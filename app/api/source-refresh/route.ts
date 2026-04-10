@@ -1,27 +1,16 @@
 import { NextResponse } from "next/server";
-import { readStore, replaceCollection } from "@/lib/storage";
+import { refreshAllSources } from "@/lib/sourceRefreshOrchestrator";
 
 export async function POST() {
-  const db = await readStore();
-  const now = new Date().toISOString();
-
-  const updatedStats = (db.sourceStats || []).map((row: any) => ({
-    ...row,
-    lastFetchAt: now,
-    lastRunOk: true
-  }));
-
-  const updatedMeta = {
-    ...(db.meta || {}),
-    lastSuccessfulIngestionAt: now,
-    lastSuccessfulIngestionSource: "Manueller Testlauf"
-  };
-
-  await replaceCollection("sourceStats", updatedStats);
-  await replaceCollection("meta", [updatedMeta]);
-
+  const result = await refreshAllSources();
   return NextResponse.json({
-    ok: true,
-    refreshedAt: now
+    ok: result.ok,
+    refreshedAt: result.finishedAt,
+    summary: result.summary,
+    results: result.results
   });
+}
+
+export async function GET() {
+  return POST();
 }

@@ -1,9 +1,6 @@
 import { readStore, replaceCollection } from "@/lib/storage";
 import { toPlain } from "@/lib/serializers";
-
-function isValidDirectUrl(url: any) {
-  return typeof url === "string" && /^https?:\/\//i.test(url);
-}
+import { strictDirectLink } from "@/lib/strictLinkValidation";
 
 export async function probeDeepLinks() {
   const db = await readStore();
@@ -15,22 +12,19 @@ export async function probeDeepLinks() {
 
   const next = hits.map((hit: any) => {
     checked += 1;
-
-    const resolved =
-      isValidDirectUrl(hit?.externalResolvedUrl) ? hit.externalResolvedUrl :
-      isValidDirectUrl(hit?.url) ? hit.url :
-      null;
-
-    const ok = !!resolved;
+    const assessed = strictDirectLink(hit);
+    const ok = assessed.valid === true;
 
     if (ok) valid += 1;
     else invalid += 1;
 
     return {
       ...hit,
-      externalResolvedUrl: resolved,
+      externalResolvedUrl: assessed.valid ? assessed.url : null,
       directLinkValid: ok,
-      directLinkReason: ok ? "Direktlink vorhanden" : "Kein belastbarer Direktlink",
+      directLinkReason: assessed.reason,
+      linkStatus: assessed.status,
+      linkLabel: assessed.valid ? "Originalquelle öffnen" : "Kein belastbarer Direktlink",
       operationallyUsable: ok ? (hit?.operationallyUsable !== false) : false
     };
   });

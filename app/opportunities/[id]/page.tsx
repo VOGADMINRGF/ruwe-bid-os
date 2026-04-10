@@ -39,11 +39,13 @@ export default async function OpportunityDetailPage({
           <div className="meta">Region: {opp.region}</div>
           <div className="meta">Gewerk: {opp.trade}</div>
           <div className="meta">Entscheidung: {opp.decision}</div>
+          <div className="meta">Entscheidungsgrund: {opp.decision === "No-Bid" || opp.decision === "No-Go" ? (opp.noBidReason || opp.fitReasonShort || "-") : (opp.fitReasonShort || "-")}</div>
           <div className="meta">Stage: {opp.stage}</div>
           <div className="meta">Kalkulationsmodus: {opp.calcMode}</div>
           <div className="meta">Volumen: {formatCurrencyCompact(opp.estimatedValue || 0)}</div>
           <div className="meta">Laufzeit: {opp.durationMonths || 0} Mon.</div>
           <div className="meta">Frist: {opp.dueDate || "-"}</div>
+          <div className="meta">Nächster Schritt: {opp.nextStep || "-"}</div>
           <div className="meta">Owner: {opp.ownerId || "-"}</div>
           <div className="meta">Assistenz: {opp.supportOwnerId || "-"}</div>
           <div className="meta">
@@ -68,6 +70,7 @@ export default async function OpportunityDetailPage({
           <div className="meta">Direktlink valide: {workbench?.metrics?.directLinkValid ? "ja" : "nein"}</div>
           <div className="meta">Fit-Score: {opp.fitScore ?? "-"}</div>
           <div className="meta">Fit-Einschätzung: {opp.fitReasonShort || "-"}</div>
+          <div className="meta">No-Bid/No-Go Grund: {opp.noBidReason || "-"}</div>
         </div>
       </div>
 

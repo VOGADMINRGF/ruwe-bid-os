@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { updateSourceRegistryStatus } from "@/lib/sourceControl";
+import { refreshSource } from "@/lib/sourceRefreshOrchestrator";
 
-export async function GET(req: Request) {
+async function run(req: Request) {
   const url = new URL(req.url);
   const sourceId = url.searchParams.get("sourceId");
 
@@ -9,15 +9,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "sourceId fehlt" }, { status: 400 });
   }
 
-  await updateSourceRegistryStatus(sourceId, {
-    status: "running",
-    lastRunAt: new Date().toISOString(),
-    lastError: null
-  });
+  const result = await refreshSource(sourceId);
+  return NextResponse.json(result, { status: result.ok ? 200 : 500 });
+}
 
-  return NextResponse.json({
-    ok: true,
-    sourceId,
-    note: "Einzelquellen-Abruf vorbereitet. Quelle wurde zum manuellen Refresh markiert."
-  });
+export async function GET(req: Request) {
+  return run(req);
+}
+
+export async function POST(req: Request) {
+  return run(req);
 }

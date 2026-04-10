@@ -15,6 +15,46 @@ export async function updateSourceRegistryStatus(sourceId: string, patch: Record
   await replaceCollection("sourceRegistry", next);
 }
 
+export async function updateSourceRegistryEntry(sourceId: string, patch: Record<string, any>) {
+  const db = await readStore();
+  const rows = Array.isArray(db.sourceRegistry) ? db.sourceRegistry : [];
+  const allowed = {
+    name: patch?.name,
+    active: patch?.active,
+    legalUse: patch?.legalUse,
+    dataMode: patch?.dataMode,
+    notes: patch?.notes,
+    type: patch?.type,
+    supportsFeed: patch?.supportsFeed,
+    supportsManualImport: patch?.supportsManualImport,
+    supportsDeepLink: patch?.supportsDeepLink,
+    lastQuery: patch?.lastQuery
+  };
+
+  let updated: any = null;
+  const next = rows.map((x: any) => {
+    if (x.id !== sourceId) return x;
+    updated = {
+      ...x,
+      ...Object.fromEntries(
+        Object.entries(allowed).filter(([, value]) => value !== undefined)
+      ),
+      updatedAt: nowIso()
+    };
+    return updated;
+  });
+
+  if (!updated) return null;
+  await replaceCollection("sourceRegistry", next);
+  return updated;
+}
+
+export async function listSourceRegistry() {
+  await ensureSourceRegistryDefaults();
+  const db = await readStore();
+  return Array.isArray(db.sourceRegistry) ? db.sourceRegistry : [];
+}
+
 export async function ensureSourceRegistryDefaults() {
   const db = await readStore();
   const rows = Array.isArray(db.sourceRegistry) ? db.sourceRegistry : [];
@@ -25,6 +65,7 @@ export async function ensureSourceRegistryDefaults() {
     lastRunOk: null,
     lastRunCount: 0,
     lastError: null,
+    notes: "",
     supportsDeepLink: false,
     ...x
   }));

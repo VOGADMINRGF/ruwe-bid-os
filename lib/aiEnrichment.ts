@@ -1,6 +1,8 @@
 import { readStore, replaceCollection } from "@/lib/storage";
 import { classifyExternalLink, sourceDataQuality } from "@/lib/sourceValidity";
 import { findBestCostModel, estimateVolumeByCostModel, rememberMissingParameter } from "@/lib/costModels";
+import { normalizeRegionFromHit } from "@/lib/regionNormalization";
+import { classifyTrade, detectCalcMode } from "@/lib/tradeClassification";
 
 function n(v: any) {
   const x = Number(v || 0);
@@ -31,14 +33,26 @@ export async function enrichSourceHitsForValidityAndEstimation() {
     const link = classifyExternalLink(hit, registry);
     const text = `${hit?.title || ""} ${hit?.description || ""}`;
     const inferredTrade = !hit?.trade || hit?.trade === "Sonstiges" ? inferTradeFromText(text) : hit.trade;
+    const tradeNormalized = classifyTrade({ ...hit, trade: inferredTrade });
+    const regionNormalized = normalizeRegionFromHit(hit);
+    const calcMode = detectCalcMode({ title: hit?.title, aiReason: hit?.aiReason, aiSummary: hit?.description });
     const quality = sourceDataQuality({ ...hit, trade: inferredTrade });
 
     let next = {
       ...hit,
-      trade: inferredTrade,
+      region: regionNormalized || hit?.region || "Unbekannt",
+      regionRaw: String(hit?.regionRaw || hit?.region || ""),
+      regionNormalized,
+      trade: tradeNormalized,
+      tradeRaw: String(hit?.tradeRaw || hit?.trade || inferredTrade),
+      tradeNormalized,
       linkStatus: link.linkStatus,
       linkLabel: link.linkLabel,
       externalResolvedUrl: link.url,
+      directLinkValid: link.isReliable,
+      directLinkReason: link.isReliable ? "Valider Direktlink erkannt." : "Start-/Portal- oder Suchseite statt belastbarem Direktlink.",
+      operationallyUsable: link.isReliable,
+      calcMode,
       sourceQuality: quality.quality,
       sourceQualityReasons: quality.reasons
     };

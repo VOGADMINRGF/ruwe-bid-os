@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { sanitizeInternalHref } from "@/lib/dashboardRoutes";
 
 const primary = [
   { href: "/", label: "Dashboard" },
@@ -20,6 +24,9 @@ const secondary = [
 ];
 
 export default function MainNav() {
+  const pathname = usePathname();
+  const active = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
   return (
     <header className="topbar">
       <div className="shell topbar-inner">
@@ -30,7 +37,11 @@ export default function MainNav() {
 
         <nav className="nav nav-primary">
           {primary.map((item) => (
-            <Link key={item.href} href={item.href} className="nav-link">
+            <Link
+              key={item.href}
+              href={sanitizeInternalHref(item.href, "/")}
+              className={`nav-link${active(item.href) ? " is-active" : ""}`}
+            >
               {item.label}
             </Link>
           ))}
@@ -38,7 +49,11 @@ export default function MainNav() {
 
         <nav className="nav nav-secondary">
           {secondary.map((item) => (
-            <Link key={item.href} href={item.href} className="nav-link subtle">
+            <Link
+              key={item.href}
+              href={sanitizeInternalHref(item.href, "/")}
+              className={`nav-link subtle${active(item.href) ? " is-active" : ""}`}
+            >
               {item.label}
             </Link>
           ))}

@@ -39,12 +39,12 @@ const DEFAULT_CONNECTORS = [
     id: "src_berlin",
     name: "Vergabeplattform Berlin",
     authType: "none",
-    baseUrl: "",
+    baseUrl: "https://www.berlin.de/vergabeplattform/veroeffentlichungen/bekanntmachungen/feed.rss",
     active: true,
     supportsFeed: true,
     supportsQuerySearch: true,
     supportsManualImport: true,
-    supportsDeepLink: false,
+    supportsDeepLink: true,
     status: "idle",
     lastTestAt: null,
     lastTestOk: null,
@@ -57,7 +57,7 @@ const DEFAULT_CONNECTORS = [
     baseUrl: "",
     active: true,
     supportsFeed: true,
-    supportsQuerySearch: true,
+    supportsQuerySearch: false,
     supportsManualImport: true,
     supportsDeepLink: false,
     status: "idle",
@@ -70,7 +70,21 @@ const DEFAULT_CONNECTORS = [
 export async function ensureConnectors() {
   const db = await readStore();
   const rows = Array.isArray(db.connectors) ? db.connectors : [];
-  if (rows.length) return rows;
+  if (rows.length) {
+    const byId = new Map(DEFAULT_CONNECTORS.map((x) => [x.id, x]));
+    const next = rows.map((row: any) => {
+      const defaults = byId.get(row.id);
+      if (!defaults) return row;
+      return {
+        ...defaults,
+        ...row,
+        supportsQuerySearch: defaults.supportsQuerySearch,
+        updatedAt: new Date().toISOString()
+      };
+    });
+    await replaceCollection("connectors" as any, next);
+    return next;
+  }
   await replaceCollection("connectors" as any, DEFAULT_CONNECTORS);
   return DEFAULT_CONNECTORS;
 }

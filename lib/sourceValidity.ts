@@ -1,8 +1,20 @@
+import { strictDirectLink } from "@/lib/strictLinkValidation";
+
 function isHttp(v: any) {
   return typeof v === "string" && /^https?:\/\//i.test(v);
 }
 
 export function classifyExternalLink(hit: any, registry: any[] = []) {
+  const strict = strictDirectLink(hit);
+  if (strict.valid) {
+    return {
+      url: strict.url,
+      linkStatus: "direct_notice",
+      linkLabel: "Originalquelle öffnen",
+      isReliable: true
+    };
+  }
+
   const directCandidates = [
     hit?.noticeUrl,
     hit?.externalUrl,
@@ -10,15 +22,6 @@ export function classifyExternalLink(hit: any, registry: any[] = []) {
     hit?.url,
     hit?.link
   ].filter(isHttp);
-
-  if (directCandidates.length) {
-    return {
-      url: directCandidates[0],
-      linkStatus: "direct_notice",
-      linkLabel: "Originalquelle öffnen",
-      isReliable: true
-    };
-  }
 
   const source = registry.find((s: any) => s.id === hit?.sourceId);
   const searchCandidates = [
@@ -32,7 +35,7 @@ export function classifyExternalLink(hit: any, registry: any[] = []) {
     return {
       url: searchCandidates[0],
       linkStatus: "source_home_only",
-      linkLabel: "Quellenportal öffnen",
+      linkLabel: strict.reason || "Quellenportal öffnen",
       isReliable: false
     };
   }

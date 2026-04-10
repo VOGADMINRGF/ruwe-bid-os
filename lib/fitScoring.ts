@@ -20,7 +20,7 @@ const CORE_REGIONS = [
 export async function scoreOpportunityFit(opportunity: any) {
   const db = await readStore();
   const rules = Array.isArray(db.siteTradeRules) ? db.siteTradeRules : [];
-  const learningRules = Array.isArray((db as any).learningRules) ? (db as any).learningRules : [];
+  const learningRules = Array.isArray(db.learningRules) ? db.learningRules : [];
 
   let score = 0;
   const reasons: string[] = [];

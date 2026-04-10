@@ -2,15 +2,29 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { sanitizeHref } from "@/lib/dashboardRoutes";
+
+type InsightRow = {
+  id: string;
+  title: string;
+  region?: string;
+  regionNormalized?: string;
+  trade?: string;
+  durationMonths?: number;
+  estimatedValue?: number;
+  noBidReason?: string;
+  href?: string;
+  externalResolvedUrl?: string;
+};
 
 export default function WorkbenchInsights({
   focusHits,
   longRuns,
   noBidRows
 }: {
-  focusHits: any[];
-  longRuns: any[];
-  noBidRows: any[];
+  focusHits: InsightRow[];
+  longRuns: InsightRow[];
+  noBidRows: InsightRow[];
 }) {
   const [tab, setTab] = useState<"focus" | "runs" | "nobid">("focus");
 
@@ -43,12 +57,19 @@ export default function WorkbenchInsights({
             </tr>
           </thead>
           <tbody>
-            {rows.map((x: any) => (
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={3}>Keine Daten für diesen Bereich vorhanden.</td>
+              </tr>
+            ) : rows.map((x) => (
               <tr key={x.id}>
                 <td>
                   <Link
                     className="linkish"
-                    href={typeof x?.href === "string" && x.href ? x.href : (typeof x?.externalResolvedUrl === "string" && x.externalResolvedUrl ? x.externalResolvedUrl : `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.regionNormalized || x.region || "")}`)}
+                    href={sanitizeHref(
+                      x.href || `/source-hits?trade=${encodeURIComponent(x.trade || "")}&region=${encodeURIComponent(x.regionNormalized || x.region || "")}`,
+                      { fallback: "/source-hits" }
+                    )}
                   >
                     {x.title}
                   </Link>

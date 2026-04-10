@@ -20,6 +20,10 @@ export default async function QueryHistoryPage() {
                 <th>Queries</th>
                 <th>Inserted</th>
                 <th>Duplicates</th>
+                <th>Verwertbar</th>
+                <th>Unsupported</th>
+                <th>No Match</th>
+                <th>Invalid Link</th>
               </tr>
             </thead>
             <tbody>
@@ -30,6 +34,10 @@ export default async function QueryHistoryPage() {
                   <td>{row.queryCount || 0}</td>
                   <td>{row.inserted || 0}</td>
                   <td>{row.duplicates || 0}</td>
+                  <td>{row.usableHits || 0}</td>
+                  <td>{row.unsupported || 0}</td>
+                  <td>{row.noMatch || 0}</td>
+                  <td>{row.invalidLink || 0}</td>
                 </tr>
               ))}
             </tbody>

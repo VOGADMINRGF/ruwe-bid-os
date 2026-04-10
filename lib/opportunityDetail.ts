@@ -8,7 +8,7 @@ export async function getOpportunityDetail(id: string) {
   const missingVariables = Array.isArray(db.costGaps) ? db.costGaps : [];
   const parameterMemory = Array.isArray(db.parameterMemory) ? db.parameterMemory : [];
   const sourceHits = Array.isArray(db.sourceHits) ? db.sourceHits : [];
-  const notes = Array.isArray((db as any).opportunityNotes) ? (db as any).opportunityNotes : [];
+  const notes = Array.isArray(db.opportunityNotes) ? db.opportunityNotes : [];
 
   const opportunity = opportunities.find((x: any) => x.id === id);
   if (!opportunity) return null;
@@ -51,7 +51,7 @@ export async function updateOpportunityStatus(id: string, patch: Record<string, 
 
 export async function addOpportunityNote(id: string, input: { author?: string; text: string }) {
   const db = await readStore();
-  const rows = Array.isArray((db as any).opportunityNotes) ? (db as any).opportunityNotes : [];
+  const rows = Array.isArray(db.opportunityNotes) ? db.opportunityNotes : [];
   const entry = {
     id: `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     opportunityId: id,
@@ -59,6 +59,6 @@ export async function addOpportunityNote(id: string, input: { author?: string; t
     text: input.text,
     createdAt: new Date().toISOString()
   };
-  await replaceCollection("opportunityNotes" as any, [...rows, entry] as any);
+  await replaceCollection("opportunityNotes", [...rows, entry]);
   return toPlain(entry);
 }

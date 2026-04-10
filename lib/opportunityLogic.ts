@@ -1,4 +1,7 @@
 import { readStore, replaceCollection } from "@/lib/storage";
+import { buildOpportunityFromHit } from "@/lib/opportunitySchema";
+import { assignOpportunity } from "@/lib/assignmentEngine";
+import { deriveMissingVariables } from "@/lib/missingVariables";
 
 function n(v: any) {
   const x = Number(v || 0);
@@ -47,31 +50,26 @@ export async function upsertOpportunityFromHit(hitId: string) {
   const db = await readStore();
   const hits = Array.isArray(db.sourceHits) ? db.sourceHits : [];
   const current = Array.isArray(db.opportunities) ? db.opportunities : [];
+  const parameterMemory = Array.isArray(db.parameterMemory) ? db.parameterMemory : [];
   const hit = hits.find((x: any) => x.id === hitId);
 
   if (!hit) throw new Error("Treffer nicht gefunden");
 
   const existing = current.find((x: any) => x.sourceHitId === hitId);
+  const built = buildOpportunityFromHit(hit);
+  const assignment = assignOpportunity(built);
+  const vars = deriveMissingVariables(built, parameterMemory);
+  const openVars = vars.filter((x: any) => x.status !== "beantwortet");
   const base = {
-    title: hit.title || "Unbenannter Treffer",
-    sourceHitId: hit.id,
-    region: hit.region || "Unbekannt",
-    trade: hit.trade || "Unbekannt",
-    estimatedValue: n(hit.estimatedValue),
-    durationMonths: n(hit.durationMonths),
-    aiRecommendation: hit.aiRecommendation || null,
-    aiReason: hit.aiReason || null,
-    aiConfidence: hit.aiConfidence ?? null,
-    externalResolvedUrl: hit.externalResolvedUrl || null,
-    directLinkValid: !!hit.directLinkValid,
-    operationallyUsable: hit.operationallyUsable !== false,
-    priority: derivePriority(hit),
-    stage: deriveDefaultStage(hit),
-    nextStep: deriveNextStep(hit),
-    dueDate: hit.dueDate || null,
-    ownerId: null,
-    manualDecision: null,
-    manualReason: "",
+    ...built,
+    ownerId: assignment.ownerId,
+    supportOwnerId: assignment.supportOwnerId,
+    missingVariableCount: openVars.length,
+    nextQuestion: openVars[0]?.question || null,
+    stage:
+      built.decision === "Bid" ? "qualifiziert" :
+      built.decision === "Prüfen" ? "review" :
+      "beobachten",
     status: "open",
     updatedAt: new Date().toISOString()
   };
@@ -86,7 +84,8 @@ export async function upsertOpportunityFromHit(hitId: string) {
             manualDecision: x.manualDecision ?? null,
             manualReason: x.manualReason ?? "",
             stage: x.stage || base.stage,
-            nextStep: x.nextStep || base.nextStep
+            nextStep: x.nextStep || base.nextStep,
+            overrideReason: x.overrideReason || base.overrideReason || ""
           }
         : x
     );
@@ -95,8 +94,8 @@ export async function upsertOpportunityFromHit(hitId: string) {
   }
 
   const created = {
-    id: nextId(),
     ...base,
+    id: base.id || built.id || nextId(),
     createdAt: new Date().toISOString()
   };
 

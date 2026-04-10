@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readStore, replaceCollection } from "@/lib/storage";
 import { orchestrateHitAnalysis } from "@/lib/aiOrchestrator";
+import { isAiCandidate } from "@/lib/aiGatekeeper";
 
 function wantsRedirect(req: Request) {
   const url = new URL(req.url);
@@ -9,14 +10,28 @@ function wantsRedirect(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const force = url.searchParams.get("force") === "1";
     const db = await readStore();
-    const hits = [...(db.sourceHits || [])];
-
-    const candidates = hits.filter((hit: any) => {
-      return !hit.aiAnalyzedAt || !hit.aiRecommendation || hit.aiAnalysisStatus !== "done";
+    let hits = [...(db.sourceHits || [])];
+    hits = hits.map((hit: any) => {
+      const gate = isAiCandidate(hit);
+      return {
+        ...hit,
+        aiGateAllowed: gate.allowed,
+        aiGateReason: gate.reason,
+        aiGateScore: gate.score ?? null,
+        aiGateSignals: Array.isArray(gate.signals) ? gate.signals : [],
+        aiGateAt: new Date().toISOString()
+      };
     });
+    await replaceCollection("sourceHits", hits);
 
-    const limited = candidates.slice(0, 15);
+    const pending = hits.filter((hit: any) => !hit.aiAnalyzedAt || !hit.aiRecommendation || hit.aiAnalysisStatus !== "done");
+    const candidates = force ? pending : pending.filter((hit: any) => hit.aiGateAllowed === true);
+    const limited = candidates
+      .sort((a: any, b: any) => Number(b.aiGateScore || 0) - Number(a.aiGateScore || 0))
+      .slice(0, 15);
 
     for (let i = 0; i < limited.length; i++) {
       const current = limited[i];
@@ -47,7 +62,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       analyzed: limited.length,
-      skipped: hits.length - limited.length
+      skipped: hits.length - limited.length,
+      force
     });
   } catch (error: any) {
     if (wantsRedirect(req)) {
@@ -58,4 +74,8 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(req: Request) {
+  return GET(req);
 }

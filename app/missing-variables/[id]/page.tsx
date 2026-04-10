@@ -33,14 +33,25 @@ export default async function MissingVariableDetailPage({
           <div className="section-title">Variable</div>
           <div className="meta" style={{ marginTop: 14 }}>Frage: {v.question}</div>
           <div className="meta">Typ: {v.type}</div>
+          <div className="meta">Antworttyp: {v.answerKind || "-"}</div>
+          <div className="meta">Einheit: {v.answerUnit || "-"}</div>
           <div className="meta">Region: {v.region}</div>
           <div className="meta">Gewerk: {v.trade}</div>
           <div className="meta">Priorität: {v.priority}</div>
           <div className="meta">Status: {v.status || "offen"}</div>
           <div className="meta">Owner: {v.ownerId || "-"}</div>
+          <div className="meta">Support: {v.supportOwnerId || "-"}</div>
+          <div className="meta">Beantwortet am: {v.answeredAt || "-"}</div>
         </div>
 
-        <MissingVariableAnswerForm id={v.id} question={v.question} />
+        <MissingVariableAnswerForm
+          id={v.id}
+          question={v.question}
+          answerKind={v.answerKind}
+          answerOptions={v.answerOptions}
+          answerPlaceholder={v.answerPlaceholder}
+          answerUnit={v.answerUnit}
+        />
       </div>
 
       {opp ? (

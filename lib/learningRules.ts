@@ -3,12 +3,12 @@ import { toPlain } from "@/lib/serializers";
 
 export async function listLearningRules() {
   const db = await readStore();
-  return toPlain(Array.isArray((db as any).learningRules) ? (db as any).learningRules : []);
+  return toPlain(Array.isArray(db.learningRules) ? db.learningRules : []);
 }
 
 export async function addLearningRule(input: any) {
   const db = await readStore();
-  const rows = Array.isArray((db as any).learningRules) ? (db as any).learningRules : [];
+  const rows = Array.isArray(db.learningRules) ? db.learningRules : [];
 
   const entry = {
     id: `lr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -19,6 +19,6 @@ export async function addLearningRule(input: any) {
     createdAt: new Date().toISOString()
   };
 
-  await replaceCollection("learningRules" as any, [...rows, entry] as any);
+  await replaceCollection("learningRules", [...rows, entry]);
   return toPlain(entry);
 }

@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --import tsx --test --test-concurrency=1 $(find tests -name \"*.test.ts\" -print)",
+    "test:smoke": "node --import tsx scripts/smoke-operational-flow.ts",
     "seed": "node scripts/reseed.mjs",
     "migrate:mongo": "node scripts/migrate-json-to-mongo.mjs",
     "ops:live": "curl -s http://localhost:3000/api/ops/live-ingest",
@@ -37,6 +39,7 @@
     "postcss": "^8.5.9",
     "prisma": "^7.7.0",
     "tailwindcss": "^3.4.13",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
