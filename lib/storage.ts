@@ -150,10 +150,23 @@ async function writeJsonFile(db: StoreShape) {
 async function getMongoConn() {
   const uri = process.env.MONGODB_URI;
   if (!uri) return null;
+
   const dbName = process.env.MONGODB_DB_NAME || "ruwe_bid_os";
-  const client = new MongoClient(uri);
-  await client.connect();
-  return { client, db: client.db(dbName) };
+
+  try {
+    const client = new MongoClient(uri, {
+      serverSelectionTimeoutMS: 4000,
+      connectTimeoutMS: 4000,
+      socketTimeoutMS: 8000,
+      retryWrites: true
+    });
+
+    await client.connect();
+    return { client, db: client.db(dbName) };
+  } catch (error) {
+    console.warn("[storage] Mongo connect failed, falling back to JSON store.");
+    return null;
+  }
 }
 
 const ALL_COLLECTIONS: StoreCollection[] = [
@@ -200,10 +213,13 @@ async function readMongoStore(): Promise<StoreShape | null> {
       }
     }
     return normalizeStore(out);
-  } catch {
+  } catch (error) {
+    console.warn("[storage] Mongo read failed, falling back to JSON store.");
     return null;
   } finally {
-    await conn.client.close();
+    try {
+      await conn.client.close();
+    } catch {}
   }
 }
 
@@ -228,8 +244,13 @@ async function replaceMongoCollection(name: StoreCollection, value: any) {
       await col.insertMany(docs);
     }
     return true;
+  } catch (error) {
+    console.warn(`[storage] Mongo write failed for ${name}, falling back to JSON store.`);
+    return false;
   } finally {
-    await conn.client.close();
+    try {
+      await conn.client.close();
+    } catch {}
   }
 }
 
