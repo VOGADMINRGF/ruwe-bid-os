@@ -1,5 +1,7 @@
 import { readStore } from "@/lib/storage";
 import { safeHref, toPlain } from "@/lib/serializers";
+import { normalizeRegionFromHit } from "@/lib/regionNormalization";
+import { classifyTrade } from "@/lib/tradeClassification";
 
 const CORE_TRADES = [
   "Reinigung",
