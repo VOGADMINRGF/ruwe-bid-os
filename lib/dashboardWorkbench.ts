@@ -10,10 +10,6 @@ const CORE_TRADES = [
   "Winterdienst"
 ];
 
-function toPlain<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value));
-}
-
 function n(v: any) {
   const x = Number(v || 0);
   return Number.isFinite(x) ? x : 0;
