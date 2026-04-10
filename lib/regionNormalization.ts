@@ -1,29 +1,28 @@
 import { toPlain } from "@/lib/serializers";
 
-function txt(v: any) {
+function s(v: any) {
   return String(v || "").trim();
 }
 
 export function normalizeRegionLabel(input: any) {
-  const s = txt(input).toLowerCase();
+  const raw = s(input).toLowerCase();
+  if (!raw) return "Sonstige";
 
-  if (!s) return "Sonstige";
-
-  if (s.includes("berlin")) return "Berlin";
-  if (s.includes("magdeburg")) return "Magdeburg";
-  if (s.includes("schkeuditz") || s.includes("leipzig")) return "Leipzig / Schkeuditz";
-  if (s.includes("zeitz")) return "Zeitz";
-  if (s.includes("potsdam") || s.includes("stahnsdorf")) return "Potsdam / Stahnsdorf";
-  if (s.includes("brandenburg")) return "Brandenburg";
-  if (s.includes("halle") || s.includes("stendal") || s.includes("bismark") || s.includes("dessau") || s.includes("merseburg")) return "Sachsen-Anhalt";
-  if (s.includes("jena") || s.includes("weimar") || s.includes("erfurt") || s.includes("ilm")) return "Thüringen";
-  if (s.includes("online")) return "Online";
+  if (raw.includes("berlin")) return "Berlin";
+  if (raw.includes("magdeburg")) return "Magdeburg";
+  if (raw.includes("schkeuditz") || raw.includes("leipzig")) return "Leipzig / Schkeuditz";
+  if (raw.includes("zeitz")) return "Zeitz";
+  if (raw.includes("potsdam") || raw.includes("stahnsdorf")) return "Potsdam / Stahnsdorf";
+  if (raw.includes("brandenburg")) return "Brandenburg";
+  if (raw.includes("halle") || raw.includes("stendal") || raw.includes("dessau") || raw.includes("merseburg") || raw.includes("bismark")) return "Sachsen-Anhalt";
+  if (raw.includes("jena") || raw.includes("weimar") || raw.includes("erfurt") || raw.includes("ilm")) return "Thüringen";
+  if (raw.includes("online")) return "Online";
 
   return "Sonstige";
 }
 
-export function buildRegionCandidates(hit: any) {
-  const parts = [
+export function normalizeRegionFromHit(hit: any) {
+  const candidates = [
     hit?.region,
     hit?.city,
     hit?.postalCode,
@@ -31,14 +30,19 @@ export function buildRegionCandidates(hit: any) {
     hit?.url
   ].filter(Boolean);
 
-  return toPlain(parts.map((x) => String(x)));
+  for (const c of candidates) {
+    const n = normalizeRegionLabel(c);
+    if (n !== "Sonstige") return n;
+  }
+
+  return "Sonstige";
 }
 
-export function normalizeRegionFromHit(hit: any) {
-  const candidates = buildRegionCandidates(hit);
-  for (const c of candidates) {
-    const normalized = normalizeRegionLabel(c);
-    if (normalized !== "Sonstige") return normalized;
-  }
-  return "Sonstige";
+export function buildRegionDebug(hit: any) {
+  return toPlain([
+    String(hit?.region || ""),
+    String(hit?.city || ""),
+    String(hit?.postalCode || ""),
+    String(hit?.title || "")
+  ]);
 }

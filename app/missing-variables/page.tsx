@@ -1,4 +1,5 @@
 import { readStore } from "@/lib/storage";
+import Link from "next/link";
 
 export default async function MissingVariablesPage() {
   const db = await readStore();
@@ -28,7 +29,7 @@ export default async function MissingVariablesPage() {
             <tbody>
               {rows.map((x: any) => (
                 <tr key={x.id}>
-                  <td>{x.question}</td>
+                  <td><Link className="linkish" href={`/missing-variables/${encodeURIComponent(x.id)}`}>{x.question}</Link></td>
                   <td>{x.type}</td>
                   <td>{x.region}</td>
                   <td>{x.trade}</td>
